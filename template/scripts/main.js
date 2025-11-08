@@ -688,35 +688,47 @@ function formatPrice(price, currency) {
 }
 
 function addToCart(packageData) {
-  const existingItem = cart.find(item => item.id === packageData.id);
+  cart.push(packageData);
+  currentBasket = null;
+  updateCartUI();
   
-  if (!existingItem) {
-    cart.push(packageData);
-    currentBasket = null;
-    updateCartUI();
-    showNotification(`${packageData.name} added to cart!`);
+  const count = cart.filter(item => item.id === packageData.id).length;
+  if (count > 1) {
+    showNotification(`${packageData.name} added to cart (x${count})!`);
   } else {
-    showNotification(`${packageData.name} is already in your cart!`);
+    showNotification(`${packageData.name} added to cart!`);
   }
 }
 
 function removeFromCart(packageId) {
-  cart = cart.filter(item => item.id !== packageId);
-  currentBasket = null;
-  updateCartUI();
-  renderCart();
+  const index = cart.findIndex(item => item.id === packageId);
+  if (index > -1) {
+    const removedItem = cart.splice(index, 1)[0];
+    const remaining = cart.filter(item => item.id === packageId).length;
+    
+    currentBasket = null;
+    updateCartUI();
+    renderCart();
+    
+    if (remaining > 0) {
+      showNotification(`${removedItem.name} removed (${remaining} remaining)`);
+    } else {
+      showNotification(`${removedItem.name} removed from cart`);
+    }
+  }
 }
 
 function updateCartUI() {
   document.getElementById('cartCount').textContent = cart.length;
 }
 
-function renderCart() {
+async function renderCart() {
   const cartItemsContainer = document.getElementById('cartItems');
+  const cartTotalEl = document.getElementById('cartTotal');
   
   if (cart.length === 0) {
     cartItemsContainer.innerHTML = '<div class="empty-cart">Your cart is empty</div>';
-    document.getElementById('cartTotal').textContent = '$0.00';
+    cartTotalEl.textContent = '$0.00';
     document.getElementById('checkoutButton').disabled = true;
     return;
   }
@@ -729,10 +741,42 @@ function renderCart() {
     </div>
   `).join('');
   
-  const total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
-  const currency = cart[0]?.currency || 'USD';
-  document.getElementById('cartTotal').textContent = formatPrice(total, currency);
+  cartTotalEl.textContent = 'Calculating...';
   document.getElementById('checkoutButton').disabled = false;
+  
+  try {
+    const packageCounts = {};
+    cart.forEach(item => {
+      packageCounts[item.id] = (packageCounts[item.id] || 0) + 1;
+    });
+    
+    const packages = Object.entries(packageCounts).map(([id, quantity]) => ({
+      id: parseInt(id),
+      quantity: quantity
+    }));
+    
+    const response = await fetch('/api/cart/calculate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ packages })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      cartTotalEl.textContent = formatPrice(data.total, data.currency);
+    } else {
+      const total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
+      const currency = cart[0]?.currency || 'USD';
+      cartTotalEl.textContent = formatPrice(total, currency);
+    }
+  } catch (error) {
+    console.error('Cart total calculation error:', error);
+    const total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
+    const currency = cart[0]?.currency || 'USD';
+    cartTotalEl.textContent = formatPrice(total, currency);
+  }
   
   document.querySelectorAll('.remove-item').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -774,7 +818,7 @@ document.getElementById('backToCategoriesBtn').addEventListener('click', () => {
   }
 });
 
-document.getElementById('checkGiftcardBtn').addEventListener('click', () => {
+document.getElementById('checkGiftcardBtn').addEventListener('click', async () => {
   const input = document.getElementById('giftcardInput');
   const result = document.getElementById('giftcardResult');
   const code = input.value.trim();
@@ -790,10 +834,29 @@ document.getElementById('checkGiftcardBtn').addEventListener('click', () => {
   result.className = 'giftcard-result';
   result.textContent = 'Checking gift card...';
   
-  setTimeout(() => {
+  try {
+    const response = await fetch('/api/giftcards/validate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ code })
+    });
+    
+    const data = await response.json();
+    
+    if (data.valid) {
+      result.className = 'giftcard-result success';
+      result.textContent = `Valid! Balance: ${formatPrice(data.balance, data.currency)}`;
+    } else {
+      result.className = 'giftcard-result error';
+      result.textContent = data.error || 'Invalid gift card code.';
+    }
+  } catch (error) {
+    console.error('Gift card validation error:', error);
     result.className = 'giftcard-result error';
-    result.textContent = 'Gift card validation is not configured. Please contact the store administrator.';
-  }, 1000);
+    result.textContent = 'Failed to validate gift card. Please try again.';
+  }
 });
 
 function registerCheckoutHandlers() {
@@ -1028,6 +1091,53 @@ document.getElementById('giftRecipientInput').addEventListener('input', (e) => {
   giftRecipient = e.target.value.trim();
 });
 
+async function fetchTopCustomer() {
+  const topCustomerContent = document.getElementById('topCustomerContent');
+  
+  try {
+    const response = await fetch('/api/top-customer');
+    if (!response.ok) {
+      throw new Error('Failed to fetch top customer');
+    }
+    
+    const data = await response.json();
+    
+    if (data && data.username && typeof data.amount === 'number') {
+      const avatarUrl = `https://minotar.net/avatar/${data.username}/64`;
+      topCustomerContent.innerHTML = `
+        <div class="customer-item">
+          <img src="${avatarUrl}" alt="${data.username}" class="customer-avatar" onerror="this.src='https://minotar.net/avatar/steve/64'">
+          <div class="customer-info">
+            <span class="customer-name">${data.username}</span>
+            <span class="customer-amount">$${data.amount.toFixed(2)} USD</span>
+          </div>
+        </div>
+      `;
+    } else {
+      topCustomerContent.innerHTML = `
+        <div class="customer-item">
+          <img src="https://minotar.net/avatar/steve/64" alt="No data" class="customer-avatar">
+          <div class="customer-info">
+            <span class="customer-name">No purchases today</span>
+            <span class="customer-amount">$0.00 USD</span>
+          </div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    console.error('Top customer fetch error:', error);
+    topCustomerContent.innerHTML = `
+      <div class="customer-item">
+        <img src="https://minotar.net/avatar/steve/64" alt="Error" class="customer-avatar">
+        <div class="customer-info">
+          <span class="customer-name">Unable to load data</span>
+          <span class="customer-amount">$0.00 USD</span>
+        </div>
+      </div>
+    `;
+  }
+}
+
 async function init() {
   try {
     console.log('Loading application configuration...');
@@ -1047,6 +1157,9 @@ async function init() {
     setInterval(fetchServerStatus, 60000);
     
     fetchDiscordMemberCount();
+    
+    fetchTopCustomer();
+    setInterval(fetchTopCustomer, 300000);
     
     console.log('Fetching categories from Tebex...');
     const categories = await fetchCategories();
