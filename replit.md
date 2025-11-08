@@ -27,11 +27,20 @@ A professional, fully-featured Minecraft store built with Tebex Headless API. Fe
 - **Vanilla JavaScript** - No framework dependencies for maximum performance
 
 ## Recent Changes
-*2025-11-08* - Major feature additions:
+*2025-11-08* - Major UI/UX improvements:
+- **Category-based navigation** - Categories shown first, click to view packages within
+- **Back button** - Easy navigation between categories and packages view
+- **Top Customer daily section** - Displays top spender with avatar and amount
+- **Giftcard Balance section** - Gift card code validation interface
+- **Enhanced glassy design** - More transparent, refined glass effect on all cards
+- **Smaller, compact cards** - Optimized card sizes (140px minimum width)
+- **Improved checkout error handling** - Better user feedback for checkout issues
+- **Mobile responsive** - All new sections adapt perfectly to mobile screens
+
+*2025-11-08* - Earlier updates:
 - **app.config.js system** - Centralized configuration for easy customization
 - **Live server status** - Real-time Minecraft player count display
 - **Package images** - Automatic image loading from Tebex packages
-- **Smaller cards** - Compact product display (160px minimum width)
 - **Dynamic config loading** - API endpoints serve config at runtime
 - **New background** - Beautiful Minecraft night scene
 - **Fixed basket reuse issue** - Fresh basket created for each checkout
@@ -69,17 +78,37 @@ export const config = {
 - Displays current player count (e.g., "12/100 online")
 - Graceful fallback when server is offline
 
-### 4. Package Display
+### 4. Category Navigation
+- Categories displayed first on main page
+- Click any category to view its packages
+- Back button to return to category view
+- Smooth transitions between views
+- Category cards show package count
+
+### 5. Package Display
 - Fetches images directly from Tebex API
 - Falls back to emoji icons if no image
-- Compact card design (160px min width)
+- Compact card design (140px min width)
 - Glowing hover effects with multiple colors
 
-### 5. Shopping Cart & Checkout
+### 6. Top Customer Daily
+- Displays top daily spender
+- Shows Minecraft player avatar
+- Username and purchase amount
+- Glassy card with hover effects
+
+### 7. Giftcard Balance
+- Input field for gift card codes
+- Check button for validation
+- User feedback on results
+- Ready for backend integration
+
+### 8. Shopping Cart & Checkout
 - Local cart management
 - Fresh basket created for each checkout attempt
 - Basket invalidated on cart changes (add/remove items)
 - Tebex.js embedded checkout
+- Improved error handling with clear messages
 - Event handlers registered once (no duplicates)
 
 ## Design Features
