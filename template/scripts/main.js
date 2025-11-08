@@ -90,10 +90,20 @@ async function fetchCategories() {
   }
 }
 
-async function createBasket() {
+async function createBasket(username) {
   try {
     const completeUrl = window.location.origin + appConfig.urls.completeUrl;
     const cancelUrl = window.location.origin + appConfig.urls.cancelUrl;
+    
+    const basketData = {
+      complete_url: completeUrl,
+      cancel_url: cancelUrl,
+      complete_auto_redirect: true
+    };
+    
+    if (username) {
+      basketData.username = username;
+    }
     
     const response = await fetch(`${API_BASE}/accounts/${appConfig.tebex.publicToken}/baskets`, {
       method: 'POST',
@@ -101,11 +111,7 @@ async function createBasket() {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({
-        complete_url: completeUrl,
-        cancel_url: cancelUrl,
-        complete_auto_redirect: true
-      })
+      body: JSON.stringify(basketData)
     });
     
     if (!response.ok) {
@@ -408,6 +414,13 @@ function registerCheckoutHandlers() {
 document.getElementById('checkoutButton').addEventListener('click', async () => {
   if (cart.length === 0) return;
   
+  const username = prompt('Enter your Minecraft username:');
+  
+  if (!username || username.trim() === '') {
+    showNotification('Username is required for checkout');
+    return;
+  }
+  
   const checkoutBtn = document.getElementById('checkoutButton');
   const originalText = checkoutBtn.textContent;
   
@@ -420,7 +433,7 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
     }
     
     console.log('Creating fresh basket for current cart items...');
-    currentBasket = await createBasket();
+    currentBasket = await createBasket(username.trim());
     
     if (!currentBasket || !currentBasket.ident) {
       throw new Error('Failed to create basket. Please check your Tebex configuration.');
@@ -460,6 +473,8 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
       errorMessage += 'Please check your store configuration.';
     } else if (error.message.includes('basket')) {
       errorMessage += 'Unable to create basket. Please try again.';
+    } else if (error.message.includes('login') || error.message.includes('auth')) {
+      errorMessage += 'Authentication required. Please ensure username is valid.';
     } else {
       errorMessage += 'Please try again or contact support.';
     }
