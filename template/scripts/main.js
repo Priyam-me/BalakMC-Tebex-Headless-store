@@ -1,22 +1,73 @@
 import Tebex from '@tebexio/tebex.js';
 
 const API_BASE = 'https://headless.tebex.io/api';
-const PUBLIC_TOKEN = import.meta.env.VITE_TEBEX_PUBLIC_TOKEN;
-const STORE_NAME = import.meta.env.VITE_STORE_NAME || 'MC STORE';
-const COMPLETE_URL = import.meta.env.VITE_COMPLETE_URL || window.location.origin + '/success';
-const CANCEL_URL = import.meta.env.VITE_CANCEL_URL || window.location.origin + '/cancel';
 
+let appConfig = null;
 let cart = [];
 let currentBasket = null;
+let checkoutHandlersRegistered = false;
 
-const packageIcons = ['💎', '⚔️', '🏆', '👑', '🎁', '🔥', '⭐', '🎯'];
+const packageIconFallbacks = ['💎', '⚔️', '🏆', '👑', '🎁', '🔥', '⭐', '🎯'];
 const iconColors = ['purple', 'orange', 'lime', 'blue', 'red'];
 
-document.querySelector('#storeName').textContent = STORE_NAME;
+async function loadConfig() {
+  try {
+    const response = await fetch('/api/config');
+    if (!response.ok) {
+      throw new Error('Failed to load configuration');
+    }
+    appConfig = await response.json();
+    console.log('Configuration loaded:', appConfig);
+    return appConfig;
+  } catch (error) {
+    console.error('Config load error:', error);
+    throw error;
+  }
+}
+
+function applyConfig() {
+  if (!appConfig) return;
+  
+  document.querySelector('#storeName').textContent = appConfig.storeName;
+  document.querySelector('#serverIp').textContent = appConfig.serverIp;
+  
+  const bgElement = document.querySelector('.background-image');
+  if (bgElement && appConfig.assets.backgroundImage) {
+    bgElement.style.backgroundImage = `url('${appConfig.assets.backgroundImage}')`;
+  }
+  
+  const logoImg = document.querySelector('#storeLogo');
+  if (logoImg && appConfig.assets.logo) {
+    logoImg.src = appConfig.assets.logo;
+  }
+}
+
+async function fetchServerStatus() {
+  try {
+    const response = await fetch('/api/server-status');
+    const status = await response.json();
+    
+    const statusDot = document.getElementById('statusDot');
+    const playerCount = document.getElementById('playerCount');
+    
+    if (status.online) {
+      statusDot.style.background = 'var(--lime-primary)';
+      statusDot.style.boxShadow = '0 0 10px var(--lime-glow)';
+      playerCount.textContent = `${status.players.online}/${status.players.max} online`;
+    } else {
+      statusDot.style.background = '#ef4444';
+      statusDot.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.6)';
+      playerCount.textContent = 'Offline';
+    }
+  } catch (error) {
+    console.error('Server status fetch error:', error);
+    document.getElementById('playerCount').textContent = '';
+  }
+}
 
 async function fetchCategories() {
   try {
-    const response = await fetch(`${API_BASE}/accounts/${PUBLIC_TOKEN}/categories?includePackages=1`, {
+    const response = await fetch(`${API_BASE}/accounts/${appConfig.tebex.publicToken}/categories?includePackages=1`, {
       headers: {
         'Accept': 'application/json'
       }
@@ -38,15 +89,18 @@ async function fetchCategories() {
 
 async function createBasket() {
   try {
-    const response = await fetch(`${API_BASE}/accounts/${PUBLIC_TOKEN}/baskets`, {
+    const completeUrl = window.location.origin + appConfig.urls.completeUrl;
+    const cancelUrl = window.location.origin + appConfig.urls.cancelUrl;
+    
+    const response = await fetch(`${API_BASE}/accounts/${appConfig.tebex.publicToken}/baskets`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        complete_url: COMPLETE_URL,
-        cancel_url: CANCEL_URL,
+        complete_url: completeUrl,
+        cancel_url: cancelUrl,
         complete_auto_redirect: true
       })
     });
@@ -109,7 +163,7 @@ function renderCategories(categories) {
     if (!category.packages || category.packages.length === 0) return;
     
     category.packages.forEach(pkg => {
-      const icon = packageIcons[packageIndex % packageIcons.length];
+      const iconFallback = packageIconFallbacks[packageIndex % packageIconFallbacks.length];
       const iconColor = iconColors[packageIndex % iconColors.length];
       packageIndex++;
       
@@ -117,8 +171,21 @@ function renderCategories(categories) {
       packageEl.className = 'package-card glass-card';
       packageEl.dataset.packageId = pkg.id;
       
+      let imageHtml = '';
+      if (pkg.image) {
+        imageHtml = `
+          <img src="${pkg.image}" 
+               alt="${pkg.name}" 
+               class="package-image"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <div class="package-image-fallback ${iconColor}" style="display:none;">${iconFallback}</div>
+        `;
+      } else {
+        imageHtml = `<div class="package-icon ${iconColor}">${iconFallback}</div>`;
+      }
+      
       packageEl.innerHTML = `
-        <div class="package-icon ${iconColor}">${icon}</div>
+        ${imageHtml}
         <h3 class="package-name">${pkg.name}</h3>
         <p class="package-description">${pkg.description || 'Enhance your gameplay experience'}</p>
         <div class="package-price">${formatPrice(pkg.base_price, pkg.currency)}</div>
@@ -236,6 +303,37 @@ document.getElementById('cartModal').addEventListener('click', (e) => {
   }
 });
 
+function registerCheckoutHandlers() {
+  if (checkoutHandlersRegistered) return;
+  
+  Tebex.checkout.on('payment:complete', (data) => {
+    console.log('Payment successful!', data);
+    cart = [];
+    currentBasket = null;
+    updateCartUI();
+    document.getElementById('cartModal').style.display = 'none';
+    showNotification('Thank you for your purchase!');
+  });
+  
+  Tebex.checkout.on('payment:cancelled', () => {
+    console.log('Payment cancelled by user');
+    currentBasket = null;
+    showNotification('Checkout cancelled');
+  });
+  
+  Tebex.checkout.on('checkout:closed', () => {
+    console.log('Checkout window closed');
+    currentBasket = null;
+  });
+  
+  Tebex.checkout.on('checkout:loaded', () => {
+    console.log('Checkout UI loaded successfully');
+  });
+  
+  checkoutHandlersRegistered = true;
+  console.log('Tebex checkout event handlers registered');
+}
+
 document.getElementById('checkoutButton').addEventListener('click', async () => {
   if (cart.length === 0) return;
   
@@ -265,29 +363,7 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
       }
     });
     
-    Tebex.checkout.on('payment:complete', (data) => {
-      console.log('Payment successful!', data);
-      cart = [];
-      currentBasket = null;
-      updateCartUI();
-      document.getElementById('cartModal').style.display = 'none';
-      showNotification('Thank you for your purchase!');
-    });
-    
-    Tebex.checkout.on('payment:cancelled', () => {
-      console.log('Payment cancelled by user');
-      currentBasket = null;
-      showNotification('Checkout cancelled');
-    });
-    
-    Tebex.checkout.on('checkout:closed', () => {
-      console.log('Checkout window closed');
-      currentBasket = null;
-    });
-    
-    Tebex.checkout.on('checkout:loaded', () => {
-      console.log('Checkout UI loaded successfully');
-    });
+    registerCheckoutHandlers();
     
     console.log('Launching Tebex checkout');
     Tebex.checkout.launch();
@@ -307,14 +383,21 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
 
 async function init() {
   try {
-    if (!PUBLIC_TOKEN || PUBLIC_TOKEN === 'your_public_token_here') {
-      throw new Error('Please configure your Tebex API token');
+    console.log('Loading application configuration...');
+    await loadConfig();
+    applyConfig();
+    
+    if (!appConfig.tebex.publicToken || appConfig.tebex.publicToken === 'your_tebex_public_token_here') {
+      throw new Error('Please configure your Tebex API token in app.config.js');
     }
     
     document.getElementById('loadingState').style.display = 'block';
     document.getElementById('errorState').style.display = 'none';
     
-    console.log('Fetching categories with token:', PUBLIC_TOKEN.substring(0, 10) + '...');
+    fetchServerStatus();
+    setInterval(fetchServerStatus, 30000);
+    
+    console.log('Fetching categories from Tebex...');
     const categories = await fetchCategories();
     console.log('Categories loaded:', categories.length);
     
