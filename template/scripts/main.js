@@ -42,6 +42,9 @@ class ThemeManager {
 
   createHalloweenEffects() {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    this.createHalloweenStaticDecorations();
+    
     if (prefersReducedMotion) return;
 
     const particleCount = 15;
@@ -50,6 +53,54 @@ class ThemeManager {
         this.createHalloweenParticle();
       }, i * 300);
     }
+  }
+  
+  createHalloweenStaticDecorations() {
+    const cobwebs = [
+      { top: '0', left: '0', transform: 'rotate(0deg)' },
+      { top: '0', right: '0', transform: 'scaleX(-1)' },
+      { top: '30%', left: '5%', transform: 'rotate(45deg) scale(0.7)' },
+      { top: '50%', right: '3%', transform: 'rotate(-30deg) scale(0.6)' }
+    ];
+    
+    cobwebs.forEach(pos => {
+      const cobweb = document.createElement('div');
+      cobweb.className = 'halloween-cobweb';
+      Object.assign(cobweb.style, pos);
+      cobweb.innerHTML = '🕸️';
+      document.body.appendChild(cobweb);
+      this.activeEffects.push(cobweb);
+    });
+    
+    const spiders = [
+      { top: '10%', left: '15%' },
+      { top: '40%', right: '10%' },
+      { top: '70%', left: '8%' }
+    ];
+    
+    spiders.forEach(pos => {
+      const spider = document.createElement('div');
+      spider.className = 'halloween-spider';
+      Object.assign(spider.style, pos);
+      spider.innerHTML = '🕷️';
+      document.body.appendChild(spider);
+      this.activeEffects.push(spider);
+    });
+    
+    const ghosts = [
+      { top: '20%', right: '20%' },
+      { top: '60%', left: '25%' }
+    ];
+    
+    ghosts.forEach((pos, index) => {
+      const ghost = document.createElement('div');
+      ghost.className = 'halloween-ghost';
+      ghost.style.animationDelay = `${index * 2}s`;
+      Object.assign(ghost.style, pos);
+      ghost.innerHTML = '👻';
+      document.body.appendChild(ghost);
+      this.activeEffects.push(ghost);
+    });
   }
 
   createHalloweenParticle() {
@@ -73,6 +124,9 @@ class ThemeManager {
 
   createChristmasEffects() {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    this.createChristmasStaticDecorations();
+    
     if (prefersReducedMotion) return;
 
     const snowflakeCount = 30;
@@ -81,6 +135,45 @@ class ThemeManager {
         this.createSnowflake();
       }, i * 150);
     }
+  }
+  
+  createChristmasStaticDecorations() {
+    const footer = document.querySelector('.store-footer') || document.querySelector('footer') || document.body;
+    
+    const snowLayer = document.createElement('div');
+    snowLayer.className = 'christmas-snow-layer';
+    footer.appendChild(snowLayer);
+    this.activeEffects.push(snowLayer);
+    
+    const snowman = document.createElement('div');
+    snowman.className = 'christmas-snowman';
+    snowman.innerHTML = '⛄';
+    footer.appendChild(snowman);
+    this.activeEffects.push(snowman);
+    
+    const lightsTop = document.createElement('div');
+    lightsTop.className = 'christmas-lights christmas-lights-top';
+    lightsTop.innerHTML = '💡🔴💡🟢💡🔵💡🟡💡🔴💡🟢💡🔵💡🟡💡';
+    document.body.appendChild(lightsTop);
+    this.activeEffects.push(lightsTop);
+    
+    const decorations = [
+      { emoji: '🎄', top: '15%', left: '5%' },
+      { emoji: '⭐', top: '25%', right: '8%' },
+      { emoji: '🎁', top: '45%', left: '10%' },
+      { emoji: '🔔', top: '55%', right: '12%' },
+      { emoji: '🎄', top: '75%', right: '5%' }
+    ];
+    
+    decorations.forEach((deco, index) => {
+      const decoration = document.createElement('div');
+      decoration.className = 'christmas-decoration';
+      decoration.style.animationDelay = `${index * 0.5}s`;
+      Object.assign(decoration.style, { top: deco.top, left: deco.left, right: deco.right });
+      decoration.innerHTML = deco.emoji;
+      document.body.appendChild(decoration);
+      this.activeEffects.push(decoration);
+    });
   }
 
   createSnowflake() {
@@ -643,11 +736,16 @@ function renderPackages(category) {
       imageHtml = `<div class="package-icon ${iconColor}">${iconFallback}</div>`;
     }
     
+    let description = pkg.description || 'Enhance your gameplay experience';
+    if (description.toLowerCase().includes('see image') || description.toLowerCase().includes('check image')) {
+      description = 'Enhance your gameplay experience';
+    }
+    
     packageEl.innerHTML = `
       <button class="package-info-btn" title="View details">i</button>
       ${imageHtml}
       <h3 class="package-name">${pkg.name}</h3>
-      <p class="package-description">${pkg.description || 'Enhance your gameplay experience'}</p>
+      <p class="package-description">${description}</p>
       <div class="package-price">${formatPrice(pkg.base_price, pkg.currency)}</div>
       <button class="add-to-cart-btn" data-package='${JSON.stringify({
         id: pkg.id,

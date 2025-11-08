@@ -163,10 +163,12 @@ async function calculateCartTotal(packages) {
   }
 }
 
+let topCustomerErrorLogged = false;
+
 async function getTopCustomer() {
   const now = Date.now();
   
-  if (cachedTopCustomer && (now - topCustomerLastFetch) < TOP_CUSTOMER_CACHE) {
+  if (cachedTopCustomer !== undefined && (now - topCustomerLastFetch) < TOP_CUSTOMER_CACHE) {
     return cachedTopCustomer;
   }
   
@@ -178,7 +180,13 @@ async function getTopCustomer() {
     });
     
     if (!response.ok) {
-      throw new Error('Failed to fetch payments');
+      if (!topCustomerErrorLogged) {
+        console.error('Top customer fetch error: API returned status', response.status);
+        topCustomerErrorLogged = true;
+      }
+      topCustomerLastFetch = now;
+      cachedTopCustomer = null;
+      return null;
     }
     
     const data = await response.json();
@@ -219,9 +227,15 @@ async function getTopCustomer() {
     }
     
     topCustomerLastFetch = now;
+    topCustomerErrorLogged = false;
     return cachedTopCustomer;
   } catch (error) {
-    console.error('Top customer fetch error:', error);
+    if (!topCustomerErrorLogged) {
+      console.error('Top customer fetch error:', error.message);
+      topCustomerErrorLogged = true;
+    }
+    topCustomerLastFetch = now;
+    cachedTopCustomer = null;
     return null;
   }
 }
