@@ -1,12 +1,14 @@
 # Minecraft Tebex Store
 
-A beautiful, modern Minecraft store built with the Tebex Headless API featuring an iOS-inspired glassy dark theme with lime green accents.
+A beautiful Minecraft store built with the Tebex Headless API, featuring a dark theme inspired by professional Minecraft stores with glowing effects and a stunning background.
 
 ## Features
 
-- 🎨 **iOS-Inspired Design** - Frosted glass effects with backdrop blur
-- 🌙 **Dark Theme** - Professional dark mode with lime green highlights
-- 🛒 **Shopping Cart** - Seamless cart experience with Tebex.js checkout
+- 🎨 **Professional Design** - Inspired by top Minecraft stores like mcfleet.net
+- 🌙 **Dark Theme** - Beautiful dark mode with lime green accents and glowing effects
+- 🖼️ **Custom Background** - Minecraft-themed background with overlay
+- 🛒 **Shopping Cart** - Seamless cart experience with Tebex.js embedded checkout
+- 💳 **Secure Payments** - Powered by Tebex payment processing
 - 📱 **Responsive** - Works perfectly on all devices
 - ⚡ **Fast & Modern** - Built with Vite for optimal performance
 
@@ -16,27 +18,22 @@ A beautiful, modern Minecraft store built with the Tebex Headless API featuring 
 
 1. Log in to your [Tebex Creator Panel](https://creator.tebex.io)
 2. Navigate to **Settings** → **API Keys**
-3. Copy your **Public Token** (starts with your webstore ID)
+3. Copy your **Public Token**
 
-### 2. Configure Environment Variables
+### 2. Configure Your Store
 
-The Tebex API token will be requested when you start the application. You can also configure:
+The store uses environment variables managed through Replit Secrets:
 
-- **VITE_TEBEX_PUBLIC_TOKEN** - Your Tebex public API token
-- **VITE_STORE_NAME** - Your store name (default: "Minecraft Store")
-- **VITE_COMPLETE_URL** - URL to redirect after successful purchase
-- **VITE_CANCEL_URL** - URL to redirect after cancelled purchase
+- **VITE_TEBEX_PUBLIC_TOKEN** - Your Tebex public API token (required)
+- **VITE_STORE_NAME** - Your store name (optional, default: "MC STORE")
+- **VITE_COMPLETE_URL** - Success redirect URL (optional)
+- **VITE_CANCEL_URL** - Cancel redirect URL (optional)
 
 ### 3. Run the Store
 
-```bash
-npm install
-npm run dev
-```
+The store is already configured and running! Just add your Tebex token and your products will appear automatically.
 
-Your store will be available at `http://localhost:5000`
-
-## Customization Guide
+## Template Customization
 
 All templates are located in the `/template` folder for easy editing:
 
@@ -45,60 +42,86 @@ All templates are located in the `/template` folder for easy editing:
 ```
 template/
 ├── styles/
-│   └── main.css          # All styling and theme colors
+│   └── main.css          # All styling, colors, and animations
 ├── scripts/
-│   └── main.js           # Store functionality and API integration
-└── pages/
-    ├── success.html      # Purchase success page
-    └── cancel.html       # Purchase cancellation page
+│   └── main.js           # Store functionality and Tebex integration
+├── pages/
+│   ├── success.html      # Purchase success page
+│   └── cancel.html       # Purchase cancellation page
+└── assets/
+    └── logo.png          # Store logo (add your own)
 ```
 
-### Changing Colors
+### Customizing Colors
 
-Edit `template/styles/main.css` and modify the CSS variables:
+Edit `template/styles/main.css` CSS variables:
 
 ```css
 :root {
-  --lime-primary: #84cc16;     /* Main lime green */
-  --lime-light: #a3e635;       /* Light lime green */
-  --lime-dark: #65a30d;        /* Dark lime green */
-  --lime-glow: rgba(132, 204, 22, 0.3);  /* Glow effect */
+  --lime-primary: #84cc16;     /* Main accent color */
+  --lime-light: #a3e635;       /* Light accent */
+  --lime-dark: #65a30d;        /* Dark accent */
   
-  --glass-bg: rgba(23, 23, 23, 0.7);     /* Glass background */
-  --glass-border: rgba(255, 255, 255, 0.1);  /* Glass border */
+  --purple-glow: rgba(147, 51, 234, 0.6);  /* Purple card glow */
+  --blue-glow: rgba(59, 130, 246, 0.6);    /* Blue card glow */
+  --orange-glow: rgba(249, 115, 22, 0.6);  /* Orange card glow */
   
-  --bg-dark: #0a0a0a;          /* Main background */
-  --text-primary: #ffffff;     /* Primary text */
-  --text-secondary: #a3a3a3;   /* Secondary text */
+  --glass-bg: rgba(15, 23, 42, 0.85);      /* Glass card background */
+  --bg-dark: #0f172a;                       /* Main background color */
 }
 ```
 
-### Changing Layouts
+### Adding Your Logo
 
-- **Header**: Edit the `.glass-header` section in `index.html`
-- **Hero Section**: Modify the `.hero` section in `index.html`
+1. Add your logo image to `template/assets/logo.png`
+2. The logo will automatically appear at the top of the store
+3. If no logo is found, the text "MC STORE" will be displayed
+
+### Changing the Background
+
+To use a different background image:
+
+1. Replace the image in `attached_assets/stock_images/` or add your own
+2. Update the path in `template/styles/main.css`:
+
+```css
+.background-image {
+  background-image: url('/path/to/your/image.jpg');
+}
+```
+
+### Customizing the Layout
+
+- **Header**: Edit the `.main-header` section in `index.html`
+- **Server Info**: Modify the `.server-info` section
 - **Product Cards**: Customize `.package-card` in `template/styles/main.css`
-- **Cart Modal**: Edit `.modal-content` in `index.html`
+- **Footer**: Edit the `.store-footer` section in `index.html`
 
-### Adding Custom Content
+### Package Icons
 
-You can add custom sections in `index.html` between the `<main>` tags. All new sections will automatically inherit the glassy theme.
+Package icons are automatically assigned from a preset list. To customize:
+
+Edit the `packageIcons` array in `template/scripts/main.js`:
+
+```javascript
+const packageIcons = ['💎', '⚔️', '🏆', '👑', '🎁', '🔥', '⭐', '🎯'];
+```
 
 ## How It Works
 
-1. **Fetching Products**: The app fetches categories and packages from Tebex Headless API
-2. **Shopping Cart**: Users can add packages to cart (stored locally)
-3. **Checkout**: Tebex.js creates a basket and launches the embedded checkout
-4. **Payment**: Tebex handles secure payment processing
+1. **Fetching Products**: The store fetches categories and packages from Tebex Headless API
+2. **Shopping Cart**: Users can add multiple packages to their cart
+3. **Checkout**: Tebex.js creates a secure basket and launches embedded checkout
+4. **Payment**: Tebex handles all payment processing securely
 5. **Delivery**: Items are automatically delivered to the player's Minecraft account
 
 ## API Integration
 
 The store uses:
 - **Tebex Headless API** - For fetching products and creating baskets
-- **Tebex.js** - For embedded checkout experience
+- **Tebex.js** - For embedded, secure checkout experience
 
-All API calls are made from `template/scripts/main.js`.
+All API calls are made from `template/scripts/main.js` with proper error handling.
 
 ## Building for Production
 
@@ -108,11 +131,31 @@ npm run build
 
 This creates an optimized production build in the `dist` folder.
 
+## Troubleshooting
+
+### Products Not Loading
+
+1. Verify your Tebex public token is correct
+2. Check browser console for API errors
+3. Ensure your Tebex store has published packages
+
+### Checkout Not Working
+
+1. Make sure you're using the correct public token (not private key)
+2. Check that your packages are properly configured in Tebex
+3. Review browser console for detailed error messages
+
+### Styling Issues
+
+1. Clear browser cache and hard refresh (Ctrl+Shift+R or Cmd+Shift+R)
+2. Ensure all files in `/template` folder are properly saved
+3. Check browser console for CSS loading errors
+
 ## Support
 
-For Tebex-related issues, visit [Tebex Documentation](https://docs.tebex.io/developers)
-
-For store customization help, refer to the comments in the template files.
+- **Tebex Documentation**: [docs.tebex.io/developers](https://docs.tebex.io/developers)
+- **Tebex Support**: Contact through your creator panel
+- **Template Help**: Check comments in template files
 
 ## License
 

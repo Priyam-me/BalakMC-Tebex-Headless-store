@@ -7,28 +7,34 @@
   <link rel="stylesheet" href="/template/styles/main.css">
 </head>
 <body>
-  <div class="background-gradient"></div>
+  <div class="background-image"></div>
+  <div class="background-overlay"></div>
   
   <div id="app">
-    <header class="glass-header">
-      <div class="container">
-        <h1 class="logo">
-          <span class="logo-icon">⛏️</span>
-          <span id="storeName">Minecraft Store</span>
-        </h1>
-        <div class="cart-button glass-card" id="cartButton">
+    <header class="main-header">
+      <div class="logo-container">
+        <div class="logo-glow">
+          <img src="/template/assets/logo.png" alt="Store Logo" class="store-logo" id="storeLogo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="store-logo-text" style="display: none;">
+            <span class="logo-icon">⛏️</span>
+            <h1 id="storeName">MC STORE</h1>
+          </div>
+        </div>
+      </div>
+      
+      <div class="server-info glass-card">
+        <div class="server-status">
+          <span class="status-dot"></span>
+          <span class="status-text">mcfleet.minecraft.com</span>
+        </div>
+        <button class="cart-button" id="cartButton">
           <span class="cart-icon">🛒</span>
           <span class="cart-count" id="cartCount">0</span>
-        </div>
+        </button>
       </div>
     </header>
 
     <main class="container">
-      <section class="hero glass-card">
-        <h2 class="hero-title">Welcome to Our Store</h2>
-        <p class="hero-subtitle">Enhance your Minecraft experience with exclusive packages</p>
-      </section>
-
       <div id="loadingState" class="loading-state">
         <div class="spinner"></div>
         <p>Loading packages...</p>
@@ -38,7 +44,25 @@
         <p>Failed to load packages. Please check your API configuration.</p>
       </div>
 
-      <div id="categoriesContainer" class="categories-grid"></div>
+      <div id="categoriesContainer" class="packages-container"></div>
+
+      <footer class="store-footer">
+        <div class="footer-notice glass-card">
+          <p><strong>🎉 Welcome To The Only Official mcFleet Store!</strong></p>
+          <p>After you have made a purchase here, your coins will automatically be deposited into your in-game account. If your coins have not been added, please check your purchase history to see if the transaction was completed. If you're still experiencing issues, please contact our support team.</p>
+        </div>
+        
+        <div class="footer-links">
+          <a href="#" class="footer-link">Terms of Service</a>
+          <a href="#" class="footer-link">Refund Policy</a>
+          <a href="#" class="footer-link">Support</a>
+        </div>
+        
+        <div class="payment-methods">
+          <span>Secure payments powered by</span>
+          <strong>Tebex</strong>
+        </div>
+      </footer>
     </main>
 
     <div id="cartModal" class="modal" style="display: none;">

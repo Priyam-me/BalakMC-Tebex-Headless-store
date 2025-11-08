@@ -2,21 +2,30 @@ import Tebex from '@tebexio/tebex.js';
 
 const API_BASE = 'https://headless.tebex.io/api';
 const PUBLIC_TOKEN = import.meta.env.VITE_TEBEX_PUBLIC_TOKEN;
-const STORE_NAME = import.meta.env.VITE_STORE_NAME || 'Minecraft Store';
+const STORE_NAME = import.meta.env.VITE_STORE_NAME || 'MC STORE';
 const COMPLETE_URL = import.meta.env.VITE_COMPLETE_URL || window.location.origin + '/success';
 const CANCEL_URL = import.meta.env.VITE_CANCEL_URL || window.location.origin + '/cancel';
 
 let cart = [];
 let currentBasket = null;
 
-document.getElementById('storeName').textContent = STORE_NAME;
+const packageIcons = ['💎', '⚔️', '🏆', '👑', '🎁', '🔥', '⭐', '🎯'];
+const iconColors = ['purple', 'orange', 'lime', 'blue', 'red'];
+
+document.querySelector('#storeName').textContent = STORE_NAME;
 
 async function fetchCategories() {
   try {
-    const response = await fetch(`${API_BASE}/accounts/${PUBLIC_TOKEN}/categories?includePackages=1`);
+    const response = await fetch(`${API_BASE}/accounts/${PUBLIC_TOKEN}/categories?includePackages=1`, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch categories: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('API Error:', errorText);
+      throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
@@ -33,6 +42,7 @@ async function createBasket() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
         complete_url: COMPLETE_URL,
@@ -42,10 +52,13 @@ async function createBasket() {
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to create basket: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Basket creation error:', errorText);
+      throw new Error(`Failed to create basket: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
+    console.log('Basket created:', data);
     return data.data;
   } catch (error) {
     console.error('Error creating basket:', error);
@@ -53,24 +66,29 @@ async function createBasket() {
   }
 }
 
-async function addPackageToBasket(basketIdent, packageId) {
+async function addPackageToBasket(basketIdent, packageId, quantity = 1) {
   try {
     const response = await fetch(`${API_BASE}/baskets/${basketIdent}/packages`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
         package_id: packageId,
-        quantity: 1
+        quantity: quantity
       })
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to add package: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Add package error:', errorText);
+      throw new Error(`Failed to add package: ${response.status} ${response.statusText}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log('Package added:', data);
+    return data;
   } catch (error) {
     console.error('Error adding package to basket:', error);
     throw error;
@@ -86,41 +104,36 @@ function renderCategories(categories) {
     return;
   }
   
+  let packageIndex = 0;
   categories.forEach(category => {
     if (!category.packages || category.packages.length === 0) return;
     
-    const categoryEl = document.createElement('div');
-    categoryEl.className = 'category';
-    
-    categoryEl.innerHTML = `
-      <div class="category-header">
-        <h2 class="category-title">${category.name}</h2>
-        ${category.description ? `<p class="category-description">${category.description}</p>` : ''}
-      </div>
-      <div class="packages-grid">
-        ${category.packages.map(pkg => `
-          <div class="package-card glass-card" data-package-id="${pkg.id}">
-            <div class="package-header">
-              <h3 class="package-name">${pkg.name}</h3>
-            </div>
-            <p class="package-description">${pkg.description || 'Enhance your gameplay experience'}</p>
-            <div class="package-footer">
-              <div class="package-price">${formatPrice(pkg.base_price, pkg.currency)}</div>
-              <button class="add-to-cart-btn" data-package='${JSON.stringify({
-                id: pkg.id,
-                name: pkg.name,
-                price: pkg.base_price,
-                currency: pkg.currency
-              })}'>
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-    
-    container.appendChild(categoryEl);
+    category.packages.forEach(pkg => {
+      const icon = packageIcons[packageIndex % packageIcons.length];
+      const iconColor = iconColors[packageIndex % iconColors.length];
+      packageIndex++;
+      
+      const packageEl = document.createElement('div');
+      packageEl.className = 'package-card glass-card';
+      packageEl.dataset.packageId = pkg.id;
+      
+      packageEl.innerHTML = `
+        <div class="package-icon ${iconColor}">${icon}</div>
+        <h3 class="package-name">${pkg.name}</h3>
+        <p class="package-description">${pkg.description || 'Enhance your gameplay experience'}</p>
+        <div class="package-price">${formatPrice(pkg.base_price, pkg.currency)}</div>
+        <button class="add-to-cart-btn" data-package='${JSON.stringify({
+          id: pkg.id,
+          name: pkg.name,
+          price: pkg.base_price,
+          currency: pkg.currency
+        }).replace(/'/g, "&apos;")}'>
+          Buy Now
+        </button>
+      `;
+      
+      container.appendChild(packageEl);
+    });
   });
   
   document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
@@ -196,26 +209,14 @@ function renderCart() {
 
 function showNotification(message) {
   const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed;
-    top: 100px;
-    right: 20px;
-    background: linear-gradient(135deg, var(--lime-primary), var(--lime-light));
-    color: var(--bg-dark);
-    padding: 1rem 2rem;
-    border-radius: 12px;
-    font-weight: 600;
-    z-index: 3000;
-    animation: slideIn 0.3s ease;
-    box-shadow: 0 10px 30px rgba(132, 204, 22, 0.4);
-  `;
+  notification.className = 'notification';
   notification.textContent = message;
   document.body.appendChild(notification);
   
   setTimeout(() => {
     notification.style.animation = 'slideOut 0.3s ease';
     setTimeout(() => notification.remove(), 300);
-  }, 2000);
+  }, 2500);
 }
 
 document.getElementById('cartButton').addEventListener('click', () => {
@@ -236,17 +237,24 @@ document.getElementById('cartModal').addEventListener('click', (e) => {
 document.getElementById('checkoutButton').addEventListener('click', async () => {
   if (cart.length === 0) return;
   
+  const checkoutBtn = document.getElementById('checkoutButton');
+  const originalText = checkoutBtn.textContent;
+  
   try {
-    document.getElementById('checkoutButton').textContent = 'Creating order...';
-    document.getElementById('checkoutButton').disabled = true;
+    checkoutBtn.textContent = 'Creating order...';
+    checkoutBtn.disabled = true;
     
     if (!currentBasket) {
       currentBasket = await createBasket();
+      console.log('Basket created with ident:', currentBasket.ident);
     }
     
     for (const item of cart) {
-      await addPackageToBasket(currentBasket.ident, item.id);
+      console.log('Adding package to basket:', item.id);
+      await addPackageToBasket(currentBasket.ident, item.id, 1);
     }
+    
+    console.log('Initializing Tebex checkout with ident:', currentBasket.ident);
     
     Tebex.checkout.init({
       ident: currentBasket.ident,
@@ -268,20 +276,25 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
     Tebex.checkout.on('payment:cancelled', () => {
       console.log('Payment cancelled');
       showNotification('Checkout cancelled');
-      document.getElementById('checkoutButton').textContent = 'Proceed to Checkout';
-      document.getElementById('checkoutButton').disabled = false;
     });
     
+    Tebex.checkout.on('checkout:loaded', () => {
+      console.log('Checkout UI loaded');
+    });
+    
+    console.log('Launching Tebex checkout');
     Tebex.checkout.launch();
     
-    document.getElementById('checkoutButton').textContent = 'Proceed to Checkout';
-    document.getElementById('checkoutButton').disabled = false;
+    checkoutBtn.textContent = originalText;
+    checkoutBtn.disabled = false;
     
   } catch (error) {
     console.error('Checkout error:', error);
-    showNotification('Failed to initiate checkout. Please try again.');
-    document.getElementById('checkoutButton').textContent = 'Proceed to Checkout';
-    document.getElementById('checkoutButton').disabled = false;
+    showNotification('Failed to initiate checkout. Please try again or contact support.');
+    checkoutBtn.textContent = originalText;
+    checkoutBtn.disabled = false;
+    
+    currentBasket = null;
   }
 });
 
@@ -294,7 +307,9 @@ async function init() {
     document.getElementById('loadingState').style.display = 'block';
     document.getElementById('errorState').style.display = 'none';
     
+    console.log('Fetching categories with token:', PUBLIC_TOKEN.substring(0, 10) + '...');
     const categories = await fetchCategories();
+    console.log('Categories loaded:', categories.length);
     
     document.getElementById('loadingState').style.display = 'none';
     renderCategories(categories);
@@ -307,31 +322,5 @@ async function init() {
       error.message || 'Failed to load store. Please check your configuration.';
   }
 }
-
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideIn {
-    from {
-      transform: translateX(400px);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  
-  @keyframes slideOut {
-    from {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    to {
-      transform: translateX(400px);
-      opacity: 0;
-    }
-  }
-`;
-document.head.appendChild(style);
 
 init();
