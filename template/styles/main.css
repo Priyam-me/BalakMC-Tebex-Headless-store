@@ -1196,3 +1196,335 @@ body {
     font-size: 0.95rem;
   }
 }
+
+.server-type-selector {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin: 0 auto 1rem;
+  max-width: 280px;
+  animation: fadeIn 0.5s ease;
+}
+
+.server-type-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  font-size: 0.875rem;
+  will-change: transform;
+}
+
+.server-type-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.server-type-btn.active {
+  background: linear-gradient(135deg, var(--lime-primary), var(--lime-light));
+  color: var(--bg-dark);
+  border-color: var(--lime-primary);
+  box-shadow: 0 4px 15px var(--lime-glow);
+}
+
+.server-type-icon {
+  font-size: 1.2rem;
+  filter: grayscale(0.5);
+  transition: filter 0.3s ease;
+}
+
+.server-type-btn.active .server-type-icon {
+  filter: grayscale(0);
+}
+
+.logout-modal {
+  max-width: 450px;
+  animation: modalSlideIn 0.3s ease;
+}
+
+.logout-modal-body {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.logout-modal-body p {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.logout-username {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.logout-username span {
+  color: var(--lime-primary);
+  font-weight: 700;
+}
+
+.logout-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.logout-cancel-btn,
+.logout-confirm-btn {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  font-size: 1rem;
+  border: none;
+}
+
+.logout-cancel-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+}
+
+.logout-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.logout-confirm-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.logout-confirm-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+}
+
+.product-desc-modal {
+  max-width: 600px;
+  animation: modalSlideIn 0.3s ease;
+}
+
+.product-desc-body {
+  padding: 1.5rem;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.product-desc-content {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.product-desc-content h1,
+.product-desc-content h2,
+.product-desc-content h3 {
+  color: var(--text-primary);
+  margin: 1rem 0 0.5rem;
+}
+
+.product-desc-content ul,
+.product-desc-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.product-desc-content li {
+  margin-bottom: 0.5rem;
+}
+
+.product-desc-close-btn {
+  width: 100%;
+  padding: 0.875rem;
+  background: linear-gradient(135deg, var(--lime-primary), var(--lime-light));
+  color: var(--bg-dark);
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.product-desc-close-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px var(--lime-glow);
+}
+
+.package-info-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(132, 204, 22, 0.2);
+  border: 2px solid var(--lime-primary);
+  color: var(--lime-primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  z-index: 2;
+}
+
+.package-info-btn:hover {
+  background: var(--lime-primary);
+  color: var(--bg-dark);
+  transform: scale(1.1);
+  box-shadow: 0 0 15px var(--lime-glow);
+}
+
+body.theme-halloween {
+  --lime-primary: #ff6b35;
+  --lime-light: #ff8c5a;
+  --lime-dark: #ff4500;
+  --lime-glow: rgba(255, 107, 53, 0.5);
+}
+
+body.theme-halloween .background-overlay {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(51, 17, 0, 0.8));
+}
+
+body.theme-halloween .glass-card {
+  background: rgba(51, 17, 0, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+}
+
+.halloween-particle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1;
+  animation: halloweenFloat 10s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes halloweenFloat {
+  0% {
+    transform: translateY(100vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-10vh) translateX(50px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.halloween-bat {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 10px rgba(255, 107, 53, 0.6));
+}
+
+body.theme-christmas {
+  --lime-primary: #22c55e;
+  --lime-light: #4ade80;
+  --lime-dark: #16a34a;
+  --lime-glow: rgba(34, 197, 94, 0.5);
+}
+
+body.theme-christmas .background-overlay {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(0, 51, 102, 0.7));
+}
+
+body.theme-christmas .glass-card {
+  background: rgba(0, 51, 102, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.snowflake {
+  position: fixed;
+  top: -10px;
+  color: #fff;
+  font-size: 1.2rem;
+  pointer-events: none;
+  z-index: 1;
+  animation: snowfall linear infinite;
+  opacity: 0.8;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+@keyframes snowfall {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(100vh) translateX(50px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snowflake,
+  .halloween-particle {
+    animation: none;
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .server-type-selector {
+    max-width: 90%;
+    margin: 0 auto 0.75rem;
+  }
+
+  .server-type-btn {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .server-type-icon {
+    font-size: 1rem;
+  }
+
+  .logout-modal,
+  .product-desc-modal {
+    max-width: 90%;
+  }
+
+  .logout-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .product-desc-body {
+    max-height: 400px;
+    padding: 1rem;
+  }
+}

@@ -38,6 +38,17 @@
           </div>
         </div>
       </div>
+
+      <div class="server-type-selector glass-card">
+        <button class="server-type-btn active" data-type="java">
+          <span class="server-type-icon">☕</span>
+          <span>Java</span>
+        </button>
+        <button class="server-type-btn" data-type="bedrock">
+          <span class="server-type-icon">🪨</span>
+          <span>Bedrock</span>
+        </button>
+      </div>
       
       <div class="server-info glass-card">
         <div class="server-status">
@@ -168,6 +179,38 @@
         </div>
       </div>
     </div>
+
+    <div id="logoutModal" class="modal" style="display: none;">
+      <div class="modal-content glass-card logout-modal">
+        <div class="modal-header">
+          <h2>Confirm Logout</h2>
+          <button class="close-button" id="closeLogoutModal">&times;</button>
+        </div>
+        <div class="logout-modal-body">
+          <p>Are you sure you want to logout?</p>
+          <p class="logout-username">Logged in as: <span id="logoutUsername"></span></p>
+          <div class="logout-actions">
+            <button class="logout-cancel-btn" id="logoutCancelBtn">Cancel</button>
+            <button class="logout-confirm-btn" id="logoutConfirmBtn">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="productDescModal" class="modal" style="display: none;">
+      <div class="modal-content glass-card product-desc-modal">
+        <div class="modal-header">
+          <h2 id="productDescTitle">Product Details</h2>
+          <button class="close-button" id="closeProductDescModal">&times;</button>
+        </div>
+        <div class="product-desc-body">
+          <div id="productDescContent" class="product-desc-content"></div>
+          <button class="product-desc-close-btn" id="productDescCloseBtn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="themeEffects"></div>
   </div>
 
   <script type="module" src="/template/scripts/main.js"></script>

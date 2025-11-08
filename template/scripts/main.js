@@ -7,6 +7,7 @@ let cart = [];
 let currentBasket = null;
 let checkoutHandlersRegistered = false;
 let currentUser = null;
+let serverType = 'java';
 
 const packageIconFallbacks = ['💎', '⚔️', '🏆', '👑', '🎁', '🔥', '⭐', '🎯'];
 const iconColors = ['purple', 'orange', 'lime', 'blue', 'red'];
@@ -16,6 +17,133 @@ let allCategories = [];
 
 let discordCache = { count: null, timestamp: 0 };
 const DISCORD_CACHE_DURATION = 5 * 60 * 1000;
+
+class ThemeManager {
+  constructor() {
+    this.effectsContainer = document.getElementById('themeEffects');
+    this.activeEffects = [];
+    this.animationFrame = null;
+  }
+
+  activate(theme) {
+    this.clear();
+    document.body.className = '';
+    
+    if (theme.enableHalloween) {
+      document.body.classList.add('theme-halloween');
+      this.createHalloweenEffects();
+    } else if (theme.enableChristmas) {
+      document.body.classList.add('theme-christmas');
+      this.createChristmasEffects();
+    }
+  }
+
+  createHalloweenEffects() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const particleCount = 15;
+    for (let i = 0; i < particleCount; i++) {
+      setTimeout(() => {
+        this.createHalloweenParticle();
+      }, i * 300);
+    }
+  }
+
+  createHalloweenParticle() {
+    const particle = document.createElement('div');
+    particle.className = 'halloween-particle';
+    const emojis = ['🦇', '👻', '🎃', '🕷️'];
+    particle.innerHTML = `<span class="halloween-bat">${emojis[Math.floor(Math.random() * emojis.length)]}</span>`;
+    particle.style.left = `${Math.random() * 100}%`;
+    particle.style.animationDuration = `${8 + Math.random() * 4}s`;
+    particle.style.animationDelay = `${Math.random() * 2}s`;
+    this.effectsContainer.appendChild(particle);
+    this.activeEffects.push(particle);
+
+    setTimeout(() => {
+      if (particle.parentNode) {
+        particle.remove();
+      }
+      this.createHalloweenParticle();
+    }, (8 + Math.random() * 4) * 1000);
+  }
+
+  createChristmasEffects() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const snowflakeCount = 30;
+    for (let i = 0; i < snowflakeCount; i++) {
+      setTimeout(() => {
+        this.createSnowflake();
+      }, i * 150);
+    }
+  }
+
+  createSnowflake() {
+    const snowflake = document.createElement('div');
+    snowflake.className = 'snowflake';
+    const snowTypes = ['❄', '❅', '❆', '✻', '✼'];
+    snowflake.textContent = snowTypes[Math.floor(Math.random() * snowTypes.length)];
+    snowflake.style.left = `${Math.random() * 100}%`;
+    snowflake.style.animationDuration = `${5 + Math.random() * 5}s`;
+    snowflake.style.animationDelay = `${Math.random() * 2}s`;
+    snowflake.style.fontSize = `${0.8 + Math.random() * 0.8}rem`;
+    this.effectsContainer.appendChild(snowflake);
+    this.activeEffects.push(snowflake);
+
+    setTimeout(() => {
+      if (snowflake.parentNode) {
+        snowflake.remove();
+      }
+      this.createSnowflake();
+    }, (5 + Math.random() * 5) * 1000);
+  }
+
+  clear() {
+    this.activeEffects.forEach(effect => {
+      if (effect.parentNode) {
+        effect.remove();
+      }
+    });
+    this.activeEffects = [];
+    if (this.effectsContainer) {
+      this.effectsContainer.innerHTML = '';
+    }
+  }
+}
+
+const themeManager = new ThemeManager();
+
+function formatUsernameForServer(username, type = 'java') {
+  if (!username) return username;
+  username = username.trim();
+  
+  if (type === 'bedrock') {
+    if (!username.startsWith('.')) {
+      return '.' + username;
+    }
+  } else if (type === 'java') {
+    if (username.startsWith('.')) {
+      return username.substring(1);
+    }
+  }
+  
+  return username;
+}
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 
 async function loadConfig() {
   try {
@@ -46,6 +174,10 @@ function applyConfig() {
   const logoImg = document.querySelector('#storeLogo');
   if (logoImg && appConfig.assets.logo) {
     logoImg.src = appConfig.assets.logo;
+  }
+  
+  if (appConfig.theme) {
+    themeManager.activate(appConfig.theme);
   }
 }
 
@@ -78,6 +210,12 @@ async function fetchDiscordMemberCount() {
 
 function loadUserSession() {
   try {
+    const savedServerType = localStorage.getItem('server_type');
+    if (savedServerType && (savedServerType === 'java' || savedServerType === 'bedrock')) {
+      serverType = savedServerType;
+      updateServerTypeUI();
+    }
+    
     const savedUser = localStorage.getItem('tebex_user');
     if (savedUser) {
       currentUser = JSON.parse(savedUser);
@@ -87,6 +225,16 @@ function loadUserSession() {
     console.error('Session load error:', error);
     localStorage.removeItem('tebex_user');
   }
+}
+
+function updateServerTypeUI() {
+  document.querySelectorAll('.server-type-btn').forEach(btn => {
+    if (btn.dataset.type === serverType) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
 }
 
 function saveUserSession(username) {
@@ -112,11 +260,108 @@ function updateLoginUI() {
   
   if (currentUser) {
     loginButton.classList.add('logged-in');
-    loginText.textContent = currentUser.username;
+    const displayUsername = formatUsernameForServer(currentUser.username, serverType);
+    loginText.textContent = displayUsername;
   } else {
     loginButton.classList.remove('logged-in');
     loginText.textContent = 'Login';
   }
+}
+
+function showLogoutModal() {
+  return new Promise((resolve, reject) => {
+    const modal = document.getElementById('logoutModal');
+    const usernameSpan = document.getElementById('logoutUsername');
+    const confirmBtn = document.getElementById('logoutConfirmBtn');
+    const cancelBtn = document.getElementById('logoutCancelBtn');
+    const closeBtn = document.getElementById('closeLogoutModal');
+    
+    const displayUsername = formatUsernameForServer(currentUser.username, serverType);
+    usernameSpan.textContent = displayUsername;
+    modal.style.display = 'flex';
+    
+    const handleConfirm = () => {
+      cleanup();
+      modal.style.display = 'none';
+      resolve(true);
+    };
+    
+    const handleCancel = () => {
+      cleanup();
+      modal.style.display = 'none';
+      resolve(false);
+    };
+    
+    const handleKeyPress = (e) => {
+      if (e.key === 'Escape') {
+        handleCancel();
+      }
+    };
+    
+    const cleanup = () => {
+      confirmBtn.removeEventListener('click', handleConfirm);
+      cancelBtn.removeEventListener('click', handleCancel);
+      closeBtn.removeEventListener('click', handleCancel);
+      document.removeEventListener('keydown', handleKeyPress);
+      modal.removeEventListener('click', handleModalClick);
+    };
+    
+    const handleModalClick = (e) => {
+      if (e.target.id === 'logoutModal') {
+        handleCancel();
+      }
+    };
+    
+    confirmBtn.addEventListener('click', handleConfirm);
+    cancelBtn.addEventListener('click', handleCancel);
+    closeBtn.addEventListener('click', handleCancel);
+    document.addEventListener('keydown', handleKeyPress);
+    modal.addEventListener('click', handleModalClick);
+  });
+}
+
+function showProductDescriptionModal(pkg) {
+  const modal = document.getElementById('productDescModal');
+  const title = document.getElementById('productDescTitle');
+  const content = document.getElementById('productDescContent');
+  const closeBtn = document.getElementById('closeProductDescModal');
+  const closeBottomBtn = document.getElementById('productDescCloseBtn');
+  
+  title.textContent = pkg.name;
+  
+  const description = pkg.description || 'No description available.';
+  content.innerHTML = description.replace(/\n/g, '<br>');
+  
+  modal.style.display = 'flex';
+  
+  const handleClose = () => {
+    cleanup();
+    modal.style.display = 'none';
+  };
+  
+  const handleKeyPress = (e) => {
+    if (e.key === 'Escape') {
+      handleClose();
+    }
+  };
+  
+  const cleanup = () => {
+    closeBtn.removeEventListener('click', handleClose);
+    closeBottomBtn.removeEventListener('click', handleClose);
+    document.removeEventListener('keydown', handleKeyPress);
+    modal.removeEventListener('click', handleModalClick);
+  };
+  
+  const handleModalClick = (e) => {
+    if (e.target.id === 'productDescModal') {
+      handleClose();
+    }
+  };
+  
+  closeBtn.addEventListener('click', handleClose);
+  closeBottomBtn.addEventListener('click', handleClose);
+  document.addEventListener('keydown', handleKeyPress);
+  modal.addEventListener('click', handleModalClick);
 }
 
 function showUsernameModal() {
@@ -137,12 +382,15 @@ function showUsernameModal() {
     setTimeout(() => input.focus(), 100);
     
     const handleSubmit = () => {
-      const username = input.value.trim();
+      let username = input.value.trim();
       if (!username) {
         input.style.borderColor = '#ef4444';
         setTimeout(() => input.style.borderColor = '', 300);
         return;
       }
+      
+      username = formatUsernameForServer(username, serverType);
+      
       cleanup();
       modal.style.display = 'none';
       resolve(username);
@@ -375,6 +623,7 @@ function renderPackages(category) {
     }
     
     packageEl.innerHTML = `
+      <button class="package-info-btn" title="View details">i</button>
       ${imageHtml}
       <h3 class="package-name">${pkg.name}</h3>
       <p class="package-description">${pkg.description || 'Enhance your gameplay experience'}</p>
@@ -388,6 +637,12 @@ function renderPackages(category) {
         Buy Now
       </button>
     `;
+    
+    const infoBtn = packageEl.querySelector('.package-info-btn');
+    infoBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showProductDescriptionModal(pkg);
+    });
     
     container.appendChild(packageEl);
   });
@@ -643,9 +898,10 @@ document.getElementById('discordButton').addEventListener('click', () => {
   }
 });
 
-document.getElementById('loginButton').addEventListener('click', () => {
+document.getElementById('loginButton').addEventListener('click', async () => {
   if (currentUser) {
-    if (confirm(`Logged in as ${currentUser.username}. Do you want to logout?`)) {
+    const shouldLogout = await showLogoutModal();
+    if (shouldLogout) {
       logoutUser();
     }
   } else {
@@ -704,6 +960,19 @@ document.getElementById('loginButton').addEventListener('click', () => {
     input.addEventListener('keypress', handleKeyPress);
     modal.addEventListener('click', handleModalClick);
   }
+});
+
+document.querySelectorAll('.server-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const type = btn.dataset.type;
+    if (type !== serverType) {
+      serverType = type;
+      localStorage.setItem('server_type', serverType);
+      updateServerTypeUI();
+      updateLoginUI();
+      showNotification(`Switched to ${type === 'java' ? 'Java' : 'Bedrock'} Edition`);
+    }
+  });
 });
 
 async function init() {
