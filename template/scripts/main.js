@@ -8,6 +8,8 @@ let currentBasket = null;
 let checkoutHandlersRegistered = false;
 let currentUser = null;
 let serverType = 'java';
+let isGiftPurchase = false;
+let giftRecipient = '';
 
 const packageIconFallbacks = ['💎', '⚔️', '🏆', '👑', '🎁', '🔥', '⭐', '🎯'];
 const iconColors = ['purple', 'orange', 'lime', 'blue', 'red'];
@@ -228,7 +230,7 @@ function loadUserSession() {
 }
 
 function updateServerTypeUI() {
-  document.querySelectorAll('.server-type-btn').forEach(btn => {
+  document.querySelectorAll('.modal-server-type-btn').forEach(btn => {
     if (btn.dataset.type === serverType) {
       btn.classList.add('active');
     } else {
@@ -371,6 +373,7 @@ function showUsernameModal() {
     const submitBtn = document.getElementById('usernameSubmitBtn');
     const cancelBtn = document.getElementById('usernameCancelBtn');
     const closeBtn = document.getElementById('closeUsernameModal');
+    const serverTypeBtns = modal.querySelectorAll('.modal-server-type-btn');
     
     if (currentUser && currentUser.username) {
       input.value = currentUser.username;
@@ -378,8 +381,23 @@ function showUsernameModal() {
       input.value = '';
     }
     
+    updateServerTypeUI();
     modal.style.display = 'flex';
     setTimeout(() => input.focus(), 100);
+    
+    const handleServerTypeClick = (e) => {
+      const btn = e.currentTarget;
+      const type = btn.dataset.type;
+      if (type !== serverType) {
+        serverType = type;
+        localStorage.setItem('server_type', serverType);
+        updateServerTypeUI();
+      }
+    };
+    
+    serverTypeBtns.forEach(btn => {
+      btn.addEventListener('click', handleServerTypeClick);
+    });
     
     const handleSubmit = () => {
       let username = input.value.trim();
@@ -416,6 +434,9 @@ function showUsernameModal() {
       closeBtn.removeEventListener('click', handleCancel);
       input.removeEventListener('keypress', handleKeyPress);
       modal.removeEventListener('click', handleModalClick);
+      serverTypeBtns.forEach(btn => {
+        btn.removeEventListener('click', handleServerTypeClick);
+      });
     };
     
     const handleModalClick = (e) => {
@@ -813,6 +834,12 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
   const originalText = checkoutBtn.textContent;
   
   try {
+    if (isGiftPurchase && !giftRecipient) {
+      showNotification('Please enter recipient username for gift purchase');
+      document.getElementById('giftRecipientInput').focus();
+      return;
+    }
+    
     const username = await showUsernameModal();
     
     if (!username || username.trim() === '') {
@@ -832,8 +859,11 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
       throw new Error('Store configuration is not loaded. Please refresh the page.');
     }
     
+    const recipientUsername = isGiftPurchase ? formatUsernameForServer(giftRecipient, serverType) : username.trim();
+    
     console.log('Creating fresh basket for current cart items...');
-    currentBasket = await createBasket(username.trim());
+    console.log('Is gift:', isGiftPurchase, 'Recipient:', recipientUsername);
+    currentBasket = await createBasket(recipientUsername);
     
     if (!currentBasket || !currentBasket.ident) {
       throw new Error('Failed to create basket. Please check your Tebex configuration.');
@@ -910,9 +940,25 @@ document.getElementById('loginButton').addEventListener('click', async () => {
     const submitBtn = document.getElementById('loginSubmitBtn');
     const cancelBtn = document.getElementById('loginCancelBtn');
     const closeBtn = document.getElementById('closeLoginModal');
+    const serverTypeBtns = modal.querySelectorAll('.modal-server-type-btn');
     
+    updateServerTypeUI();
     modal.style.display = 'flex';
     setTimeout(() => input.focus(), 100);
+    
+    const handleServerTypeClick = (e) => {
+      const btn = e.currentTarget;
+      const type = btn.dataset.type;
+      if (type !== serverType) {
+        serverType = type;
+        localStorage.setItem('server_type', serverType);
+        updateServerTypeUI();
+      }
+    };
+    
+    serverTypeBtns.forEach(btn => {
+      btn.addEventListener('click', handleServerTypeClick);
+    });
     
     const handleSubmit = () => {
       const username = input.value.trim();
@@ -946,6 +992,9 @@ document.getElementById('loginButton').addEventListener('click', async () => {
       closeBtn.removeEventListener('click', handleCancel);
       input.removeEventListener('keypress', handleKeyPress);
       modal.removeEventListener('click', handleModalClick);
+      serverTypeBtns.forEach(btn => {
+        btn.removeEventListener('click', handleServerTypeClick);
+      });
     };
     
     const handleModalClick = (e) => {
@@ -962,17 +1011,21 @@ document.getElementById('loginButton').addEventListener('click', async () => {
   }
 });
 
-document.querySelectorAll('.server-type-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const type = btn.dataset.type;
-    if (type !== serverType) {
-      serverType = type;
-      localStorage.setItem('server_type', serverType);
-      updateServerTypeUI();
-      updateLoginUI();
-      showNotification(`Switched to ${type === 'java' ? 'Java' : 'Bedrock'} Edition`);
-    }
-  });
+document.getElementById('giftCheckbox').addEventListener('change', (e) => {
+  isGiftPurchase = e.target.checked;
+  const recipientSection = document.getElementById('giftRecipientSection');
+  
+  if (isGiftPurchase) {
+    recipientSection.style.display = 'block';
+  } else {
+    recipientSection.style.display = 'none';
+    giftRecipient = '';
+    document.getElementById('giftRecipientInput').value = '';
+  }
+});
+
+document.getElementById('giftRecipientInput').addEventListener('input', (e) => {
+  giftRecipient = e.target.value.trim();
 });
 
 async function init() {

@@ -38,17 +38,6 @@
           </div>
         </div>
       </div>
-
-      <div class="server-type-selector glass-card">
-        <button class="server-type-btn active" data-type="java">
-          <span class="server-type-icon">☕</span>
-          <span>Java</span>
-        </button>
-        <button class="server-type-btn" data-type="bedrock">
-          <span class="server-type-icon">🪨</span>
-          <span>Bedrock</span>
-        </button>
-      </div>
       
       <div class="server-info glass-card">
         <div class="server-status">
@@ -135,6 +124,15 @@
           <button class="close-button" id="closeCart">&times;</button>
         </div>
         <div id="cartItems" class="cart-items"></div>
+        <div class="cart-gift-option">
+          <label class="gift-checkbox-label">
+            <input type="checkbox" id="giftCheckbox" class="gift-checkbox">
+            <span>Purchase as gift</span>
+          </label>
+          <div id="giftRecipientSection" class="gift-recipient-section" style="display: none;">
+            <input type="text" id="giftRecipientInput" class="gift-recipient-input" placeholder="Recipient's Minecraft username">
+          </div>
+        </div>
         <div class="cart-footer">
           <div class="cart-total">
             <span>Total:</span>
@@ -148,12 +146,22 @@
     <div id="usernameModal" class="modal" style="display: none;">
       <div class="modal-content glass-card username-modal">
         <div class="modal-header">
-          <h2>Enter Minecraft Username</h2>
+          <h2>Enter your username to continue</h2>
           <button class="close-button" id="closeUsernameModal">&times;</button>
         </div>
         <div class="username-modal-body">
-          <p>Please enter your Minecraft username to complete your purchase:</p>
-          <input type="text" id="usernameInput" class="username-input" placeholder="Your Minecraft username" autocomplete="off">
+          <div class="modal-server-type-selector">
+            <button class="modal-server-type-btn active" data-type="java">
+              <span class="server-type-icon">☕</span>
+              <span>Java Edition</span>
+            </button>
+            <button class="modal-server-type-btn" data-type="bedrock">
+              <span class="server-type-icon">🪨</span>
+              <span>Bedrock Edition</span>
+            </button>
+          </div>
+          <p class="modal-info-text">Usernames are case sensitive, no spaces</p>
+          <input type="text" id="usernameInput" class="username-input" placeholder="Username" autocomplete="off">
           <div class="username-actions">
             <button class="username-cancel-btn" id="usernameCancelBtn">Cancel</button>
             <button class="username-submit-btn" id="usernameSubmitBtn">Continue</button>
@@ -169,8 +177,18 @@
           <button class="close-button" id="closeLoginModal">&times;</button>
         </div>
         <div class="login-modal-body">
-          <p>Enter your Minecraft username to save it for faster checkout:</p>
-          <input type="text" id="loginUsernameInput" class="login-input" placeholder="Your Minecraft username" autocomplete="username">
+          <div class="modal-server-type-selector">
+            <button class="modal-server-type-btn active" data-type="java">
+              <span class="server-type-icon">☕</span>
+              <span>Java Edition</span>
+            </button>
+            <button class="modal-server-type-btn" data-type="bedrock">
+              <span class="server-type-icon">🪨</span>
+              <span>Bedrock Edition</span>
+            </button>
+          </div>
+          <p class="modal-info-text">Enter your Minecraft username to save it for faster checkout</p>
+          <input type="text" id="loginUsernameInput" class="login-input" placeholder="Username" autocomplete="username">
           <div class="login-actions">
             <button class="login-cancel-btn" id="loginCancelBtn">Cancel</button>
             <button class="login-submit-btn" id="loginSubmitBtn">Login</button>
