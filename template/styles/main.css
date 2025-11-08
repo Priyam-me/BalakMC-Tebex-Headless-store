@@ -652,12 +652,60 @@ body {
   }
   
   .packages-container {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.8rem;
+  }
+  
+  .category-card {
+    min-height: 120px;
+    padding: 1rem 0.75rem;
+  }
+  
+  .category-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .category-name {
+    font-size: 0.9rem;
+  }
+  
+  .package-card {
+    min-height: 160px;
+    padding: 0.75rem;
   }
   
   .package-icon {
-    font-size: 3rem;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .package-image {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .package-name {
+    font-size: 0.85rem;
+  }
+  
+  .package-description {
+    font-size: 0.65rem;
+    min-height: 24px;
+  }
+  
+  .package-price {
+    font-size: 0.85rem;
+  }
+  
+  .add-to-cart-btn {
+    font-size: 0.65rem;
+    padding: 0.5rem 0.6rem;
+  }
+  
+  .back-button {
+    font-size: 0.85rem;
+    padding: 0.6rem 1.2rem;
   }
   
   .footer-links {
