@@ -11,11 +11,14 @@
   <div class="background-overlay"></div>
   
   <div id="app">
-    <div class="top-corner-buttons">
+    <div class="discord-corner-button">
       <button class="discord-button glass-card" id="discordButton">
         <span class="discord-icon">💬</span>
         <span class="discord-count" id="discordCount">...</span>
       </button>
+    </div>
+
+    <div class="login-corner-button">
       <button class="login-button glass-card" id="loginButton">
         <span class="login-icon">👤</span>
         <span class="login-text" id="loginText">Login</span>
@@ -148,17 +151,17 @@
     <div id="loginModal" class="modal" style="display: none;">
       <div class="modal-content glass-card login-modal">
         <div class="modal-header">
-          <h2>Login to Your Account</h2>
+          <h2>Login with Minecraft</h2>
           <button class="close-button" id="closeLoginModal">&times;</button>
         </div>
         <div class="login-modal-body">
-          <p>Login with your email to access your purchase history and saved information:</p>
-          <input type="email" id="loginEmailInput" class="login-input" placeholder="Email address" autocomplete="email">
+          <p>Enter your Minecraft username to save it for faster checkout:</p>
+          <input type="text" id="loginUsernameInput" class="login-input" placeholder="Your Minecraft username" autocomplete="username">
           <div class="login-actions">
             <button class="login-cancel-btn" id="loginCancelBtn">Cancel</button>
             <button class="login-submit-btn" id="loginSubmitBtn">Login</button>
           </div>
-          <p class="login-note">Your login will be saved for future purchases</p>
+          <p class="login-note">Your username will be saved for future purchases</p>
         </div>
       </div>
     </div>

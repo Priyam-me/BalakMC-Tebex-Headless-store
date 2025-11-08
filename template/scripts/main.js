@@ -76,10 +76,9 @@ function loadUserSession() {
   }
 }
 
-function saveUserSession(email, username = null) {
+function saveUserSession(username) {
   const userData = {
-    email: email,
-    username: username || email.split('@')[0],
+    username: username,
     loginDate: new Date().toISOString()
   };
   currentUser = userData;
@@ -100,7 +99,7 @@ function updateLoginUI() {
   
   if (currentUser) {
     loginButton.classList.add('logged-in');
-    loginText.textContent = currentUser.username || currentUser.email.split('@')[0];
+    loginText.textContent = currentUser.username;
   } else {
     loginButton.classList.remove('logged-in');
     loginText.textContent = 'Login';
@@ -554,7 +553,7 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
     
     if (currentUser && username) {
       currentUser.username = username;
-      saveUserSession(currentUser.email, username);
+      saveUserSession(username);
     }
     
     checkoutBtn.textContent = 'Creating order...';
@@ -632,12 +631,12 @@ document.getElementById('discordButton').addEventListener('click', () => {
 
 document.getElementById('loginButton').addEventListener('click', () => {
   if (currentUser) {
-    if (confirm(`Logged in as ${currentUser.username || currentUser.email}. Do you want to logout?`)) {
+    if (confirm(`Logged in as ${currentUser.username}. Do you want to logout?`)) {
       logoutUser();
     }
   } else {
     const modal = document.getElementById('loginModal');
-    const input = document.getElementById('loginEmailInput');
+    const input = document.getElementById('loginUsernameInput');
     const submitBtn = document.getElementById('loginSubmitBtn');
     const cancelBtn = document.getElementById('loginCancelBtn');
     const closeBtn = document.getElementById('closeLoginModal');
@@ -646,15 +645,15 @@ document.getElementById('loginButton').addEventListener('click', () => {
     setTimeout(() => input.focus(), 100);
     
     const handleSubmit = () => {
-      const email = input.value.trim();
-      if (!email || !email.includes('@')) {
+      const username = input.value.trim();
+      if (!username) {
         input.style.borderColor = '#ef4444';
         setTimeout(() => input.style.borderColor = '', 300);
         return;
       }
       cleanup();
       modal.style.display = 'none';
-      saveUserSession(email);
+      saveUserSession(username);
       showNotification('Logged in successfully!');
     };
     
