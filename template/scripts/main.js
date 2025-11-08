@@ -737,9 +737,48 @@ function renderPackages(category) {
     }
     
     let description = pkg.description || 'Enhance your gameplay experience';
-    if (description.toLowerCase().includes('see image') || description.toLowerCase().includes('check image')) {
-      description = 'Enhance your gameplay experience';
-    }
+    
+    const cleanDescription = (desc) => {
+      if (!desc) return 'Enhance your gameplay experience';
+      
+      let cleaned = desc;
+      
+      const placeholderPatterns = [
+        /see\s+image/gi,
+        /check\s+image/gi,
+        /refer\s+to\s+image/gi,
+        /view\s+image/gi,
+        /see\s+the\s+image/gi,
+        /check\s+the\s+image/gi,
+        /refer\s+to\s+the\s+image/gi,
+        /please\s+see\s+image/gi,
+        /please\s+check\s+image/gi,
+        /see\s+img/gi,
+        /check\s+img/gi
+      ];
+      
+      placeholderPatterns.forEach(pattern => {
+        cleaned = cleaned.replace(pattern, '');
+      });
+      
+      cleaned = cleaned
+        .replace(/[.,:;!?]+\s*[.,:;!?]+/g, '. ')
+        .replace(/\s+/g, ' ')
+        .replace(/^\s*[.,:;!?]+\s*/g, '')
+        .trim();
+      
+      if (cleaned.length < 10) {
+        return 'Enhance your gameplay experience';
+      }
+      
+      if (cleaned.length > 200) {
+        return cleaned.substring(0, 200).trim() + '...';
+      }
+      
+      return cleaned;
+    };
+    
+    description = cleanDescription(description);
     
     packageEl.innerHTML = `
       <button class="package-info-btn" title="View details">i</button>

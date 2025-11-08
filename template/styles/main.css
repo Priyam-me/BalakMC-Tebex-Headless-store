@@ -1401,7 +1401,7 @@ body.theme-halloween {
 }
 
 body.theme-halloween .background-overlay {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(51, 17, 0, 0.8));
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(51, 17, 0, 0.6));
 }
 
 body.theme-halloween .glass-card {
@@ -1448,7 +1448,7 @@ body.theme-christmas {
 }
 
 body.theme-christmas .background-overlay {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(0, 51, 102, 0.7));
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(0, 51, 102, 0.5));
 }
 
 body.theme-christmas .glass-card {
