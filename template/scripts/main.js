@@ -784,7 +784,6 @@ function renderPackages(category) {
       <button class="package-info-btn" title="View details">i</button>
       ${imageHtml}
       <h3 class="package-name">${pkg.name}</h3>
-      <p class="package-description">${description}</p>
       <div class="package-price">${formatPrice(pkg.base_price, pkg.currency)}</div>
       <button class="add-to-cart-btn" data-package='${JSON.stringify({
         id: pkg.id,
