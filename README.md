@@ -331,3 +331,5 @@ This template is free to use and customize for your Minecraft server store.
 ---
 
 **Made with ❤️ for the Minecraft community**
+"# BalakMC-Tebex-Headless-store" 
+"# BalakMC-Tebex-Headless-store" 
