@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Purchase Complete</title>
+  <link rel="stylesheet" href="/template/styles/main.css">
+  <style>
+    .success-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    .success-icon {
+      font-size: 5rem;
+      margin-bottom: 1rem;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 2rem;
+      padding: 1rem 2rem;
+      background: var(--lime-primary);
+      color: var(--bg-dark);
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+    .back-link:hover {
+      background: var(--lime-light);
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="background-gradient"></div>
+  <div class="success-page">
+    <div class="glass-card" style="padding: 3rem; max-width: 500px;">
+      <div class="success-icon">✅</div>
+      <h1 style="color: var(--lime-primary); margin-bottom: 1rem;">Purchase Complete!</h1>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+        Thank you for your purchase. Your items will be delivered to your Minecraft account shortly.
+      </p>
+      <p style="color: var(--text-secondary); font-size: 0.875rem;">
+        Please allow a few minutes for processing.
+      </p>
+      <a href="/" class="back-link">Return to Store</a>
+    </div>
+  </div>
+</body>
+</html>

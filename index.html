@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minecraft Store</title>
+  <link rel="stylesheet" href="/template/styles/main.css">
+</head>
+<body>
+  <div class="background-gradient"></div>
+  
+  <div id="app">
+    <header class="glass-header">
+      <div class="container">
+        <h1 class="logo">
+          <span class="logo-icon">⛏️</span>
+          <span id="storeName">Minecraft Store</span>
+        </h1>
+        <div class="cart-button glass-card" id="cartButton">
+          <span class="cart-icon">🛒</span>
+          <span class="cart-count" id="cartCount">0</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero glass-card">
+        <h2 class="hero-title">Welcome to Our Store</h2>
+        <p class="hero-subtitle">Enhance your Minecraft experience with exclusive packages</p>
+      </section>
+
+      <div id="loadingState" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading packages...</p>
+      </div>
+
+      <div id="errorState" class="error-state" style="display: none;">
+        <p>Failed to load packages. Please check your API configuration.</p>
+      </div>
+
+      <div id="categoriesContainer" class="categories-grid"></div>
+    </main>
+
+    <div id="cartModal" class="modal" style="display: none;">
+      <div class="modal-content glass-card">
+        <div class="modal-header">
+          <h2>Shopping Cart</h2>
+          <button class="close-button" id="closeCart">&times;</button>
+        </div>
+        <div id="cartItems" class="cart-items"></div>
+        <div class="cart-footer">
+          <div class="cart-total">
+            <span>Total:</span>
+            <span id="cartTotal">$0.00</span>
+          </div>
+          <button class="checkout-button" id="checkoutButton">Proceed to Checkout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/template/scripts/main.js"></script>
+</body>
+</html>
