@@ -11,6 +11,17 @@
   <div class="background-overlay"></div>
   
   <div id="app">
+    <div class="top-corner-buttons">
+      <button class="discord-button glass-card" id="discordButton">
+        <span class="discord-icon">💬</span>
+        <span class="discord-count" id="discordCount">...</span>
+      </button>
+      <button class="login-button glass-card" id="loginButton">
+        <span class="login-icon">👤</span>
+        <span class="login-text" id="loginText">Login</span>
+      </button>
+    </div>
+
     <header class="main-header">
       <div class="logo-container">
         <div class="logo-glow">
@@ -113,6 +124,41 @@
             <span id="cartTotal">$0.00</span>
           </div>
           <button class="checkout-button" id="checkoutButton">Proceed to Checkout</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="usernameModal" class="modal" style="display: none;">
+      <div class="modal-content glass-card username-modal">
+        <div class="modal-header">
+          <h2>Enter Minecraft Username</h2>
+          <button class="close-button" id="closeUsernameModal">&times;</button>
+        </div>
+        <div class="username-modal-body">
+          <p>Please enter your Minecraft username to complete your purchase:</p>
+          <input type="text" id="usernameInput" class="username-input" placeholder="Your Minecraft username" autocomplete="off">
+          <div class="username-actions">
+            <button class="username-cancel-btn" id="usernameCancelBtn">Cancel</button>
+            <button class="username-submit-btn" id="usernameSubmitBtn">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="loginModal" class="modal" style="display: none;">
+      <div class="modal-content glass-card login-modal">
+        <div class="modal-header">
+          <h2>Login to Your Account</h2>
+          <button class="close-button" id="closeLoginModal">&times;</button>
+        </div>
+        <div class="login-modal-body">
+          <p>Login with your email to access your purchase history and saved information:</p>
+          <input type="email" id="loginEmailInput" class="login-input" placeholder="Email address" autocomplete="email">
+          <div class="login-actions">
+            <button class="login-cancel-btn" id="loginCancelBtn">Cancel</button>
+            <button class="login-submit-btn" id="loginSubmitBtn">Login</button>
+          </div>
+          <p class="login-note">Your login will be saved for future purchases</p>
         </div>
       </div>
     </div>

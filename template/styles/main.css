@@ -34,6 +34,57 @@ body {
   min-height: 100vh;
 }
 
+.top-corner-buttons {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 1rem;
+  z-index: 1000;
+}
+
+.discord-button,
+.login-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.discord-button:hover,
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px var(--lime-glow);
+}
+
+.discord-icon,
+.login-icon {
+  font-size: 1.25rem;
+}
+
+.discord-count,
+.login-text {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.discord-count {
+  color: var(--lime-primary);
+}
+
+.login-button.logged-in {
+  border-color: var(--lime-primary);
+}
+
+.login-button.logged-in .login-text {
+  color: var(--lime-primary);
+}
+
 .background-image {
   position: fixed;
   top: 0;
@@ -939,5 +990,160 @@ body {
   to {
     transform: translateX(400px);
     opacity: 0;
+  }
+}
+
+.username-modal,
+.login-modal {
+  max-width: 500px;
+}
+
+.username-modal-body,
+.login-modal-body {
+  padding: 1rem 0;
+}
+
+.username-modal-body p,
+.login-modal-body p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.username-input,
+.login-input {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  margin-bottom: 1.5rem;
+}
+
+.username-input:focus,
+.login-input:focus {
+  outline: none;
+  border-color: var(--lime-primary);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 20px var(--lime-glow);
+}
+
+.username-input::placeholder,
+.login-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.username-actions,
+.login-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.username-cancel-btn,
+.login-cancel-btn {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.username-cancel-btn:hover,
+.login-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.username-submit-btn,
+.login-submit-btn {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, var(--lime-primary), var(--lime-light));
+  color: var(--bg-dark);
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.username-submit-btn:hover,
+.login-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px var(--lime-glow);
+}
+
+.username-submit-btn:active,
+.login-submit-btn:active {
+  transform: translateY(0);
+}
+
+.login-note {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 1rem;
+  text-align: center;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .top-corner-buttons {
+    top: 10px;
+    right: 10px;
+    gap: 0.5rem;
+  }
+
+  .discord-button,
+  .login-button {
+    padding: 0.6rem 1rem;
+  }
+
+  .discord-icon,
+  .login-icon {
+    font-size: 1.1rem;
+  }
+
+  .discord-count,
+  .login-text {
+    font-size: 0.8rem;
+  }
+
+  .username-modal,
+  .login-modal {
+    max-width: 90%;
+  }
+
+  .username-input,
+  .login-input {
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .username-actions,
+  .login-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .username-cancel-btn,
+  .login-cancel-btn,
+  .username-submit-btn,
+  .login-submit-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
   }
 }

@@ -27,7 +27,14 @@ A professional, fully-featured Minecraft store built with Tebex Headless API. Fe
 - **Vanilla JavaScript** - No framework dependencies for maximum performance
 
 ## Recent Changes
-*2025-11-08* - Major UI/UX improvements:
+*2025-11-08* - Enhanced checkout and authentication features:
+- **Custom username modal** - Replaced browser prompt with themed modal matching website design
+- **Discord integration** - Top corner button showing live member count from Discord server
+- **Login system** - User authentication with localStorage persistence
+- **Saved username** - Login remembers your Minecraft username for faster checkout
+- **Improved UX** - All modals use website theme with glassmorphic design
+
+*2025-11-08* - Earlier UI/UX improvements:
 - **Category-based navigation** - Categories shown first, click to view packages within
 - **Back button** - Easy navigation between categories and packages view
 - **Top Customer daily section** - Displays top spender with avatar and amount
@@ -105,11 +112,28 @@ export const config = {
 
 ### 8. Shopping Cart & Checkout
 - Local cart management
+- Custom username modal with website theme (replaces browser prompt)
 - Fresh basket created for each checkout attempt
 - Basket invalidated on cart changes (add/remove items)
 - Tebex.js embedded checkout
 - Improved error handling with clear messages
 - Event handlers registered once (no duplicates)
+- Username saved for logged-in users
+
+### 9. User Authentication
+- Login modal with email-based authentication
+- User session saved in localStorage
+- Persistent login across page refreshes
+- Logout functionality with confirmation
+- Username auto-populated for logged-in users
+- Login status displayed in top corner button
+
+### 10. Discord Integration
+- Live member count displayed from Discord API
+- Click to join Discord server
+- Auto-refreshes every 5 minutes
+- Fallback to "Join" if API unavailable
+- Positioned in top corner for easy access
 
 ## Design Features
 - **Background**: Minecraft night scene with overlay (configurable)
@@ -129,6 +153,8 @@ export const config = {
 ### Customization Options
 - **Store Name**: Change `storeName` in config
 - **Server Status**: Update `serverIp` and `serverPort`
+- **Discord Integration**: Update `discordId` with your Discord invite code (e.g., 'abc123xyz')
+- **Discord Link**: Set `discordLink` to your Discord invite URL
 - **Background**: Change `assets.backgroundImage` path
 - **Logo**: Add image to `template/assets/logo.png`
 - **Colors**: Edit CSS variables in `template/styles/main.css`

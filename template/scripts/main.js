@@ -6,6 +6,7 @@ let appConfig = null;
 let cart = [];
 let currentBasket = null;
 let checkoutHandlersRegistered = false;
+let currentUser = null;
 
 const packageIconFallbacks = ['💎', '⚔️', '🏆', '👑', '🎁', '🔥', '⭐', '🎯'];
 const iconColors = ['purple', 'orange', 'lime', 'blue', 'red'];
@@ -43,6 +44,132 @@ function applyConfig() {
   if (logoImg && appConfig.assets.logo) {
     logoImg.src = appConfig.assets.logo;
   }
+}
+
+async function fetchDiscordMemberCount() {
+  try {
+    if (!appConfig || !appConfig.discordId) return;
+    
+    const response = await fetch(`https://discord.com/api/v10/invites/${appConfig.discordId}?with_counts=true`);
+    if (!response.ok) throw new Error('Failed to fetch Discord data');
+    
+    const data = await response.json();
+    const memberCount = data.approximate_member_count || 0;
+    
+    document.getElementById('discordCount').textContent = memberCount.toLocaleString();
+  } catch (error) {
+    console.error('Discord fetch error:', error);
+    document.getElementById('discordCount').textContent = 'Join';
+  }
+}
+
+function loadUserSession() {
+  try {
+    const savedUser = localStorage.getItem('tebex_user');
+    if (savedUser) {
+      currentUser = JSON.parse(savedUser);
+      updateLoginUI();
+    }
+  } catch (error) {
+    console.error('Session load error:', error);
+    localStorage.removeItem('tebex_user');
+  }
+}
+
+function saveUserSession(email, username = null) {
+  const userData = {
+    email: email,
+    username: username || email.split('@')[0],
+    loginDate: new Date().toISOString()
+  };
+  currentUser = userData;
+  localStorage.setItem('tebex_user', JSON.stringify(userData));
+  updateLoginUI();
+}
+
+function logoutUser() {
+  currentUser = null;
+  localStorage.removeItem('tebex_user');
+  updateLoginUI();
+  showNotification('Logged out successfully');
+}
+
+function updateLoginUI() {
+  const loginButton = document.getElementById('loginButton');
+  const loginText = document.getElementById('loginText');
+  
+  if (currentUser) {
+    loginButton.classList.add('logged-in');
+    loginText.textContent = currentUser.username || currentUser.email.split('@')[0];
+  } else {
+    loginButton.classList.remove('logged-in');
+    loginText.textContent = 'Login';
+  }
+}
+
+function showUsernameModal() {
+  return new Promise((resolve, reject) => {
+    const modal = document.getElementById('usernameModal');
+    const input = document.getElementById('usernameInput');
+    const submitBtn = document.getElementById('usernameSubmitBtn');
+    const cancelBtn = document.getElementById('usernameCancelBtn');
+    const closeBtn = document.getElementById('closeUsernameModal');
+    
+    if (currentUser && currentUser.username) {
+      input.value = currentUser.username;
+    } else {
+      input.value = '';
+    }
+    
+    modal.style.display = 'flex';
+    setTimeout(() => input.focus(), 100);
+    
+    const handleSubmit = () => {
+      const username = input.value.trim();
+      if (!username) {
+        input.style.borderColor = '#ef4444';
+        setTimeout(() => input.style.borderColor = '', 300);
+        return;
+      }
+      cleanup();
+      modal.style.display = 'none';
+      resolve(username);
+    };
+    
+    const handleCancel = () => {
+      cleanup();
+      modal.style.display = 'none';
+      reject(new Error('Username input cancelled'));
+    };
+    
+    const handleKeyPress = (e) => {
+      if (e.key === 'Enter') {
+        handleSubmit();
+      } else if (e.key === 'Escape') {
+        handleCancel();
+      }
+    };
+    
+    const cleanup = () => {
+      submitBtn.removeEventListener('click', handleSubmit);
+      cancelBtn.removeEventListener('click', handleCancel);
+      closeBtn.removeEventListener('click', handleCancel);
+      input.removeEventListener('keypress', handleKeyPress);
+      modal.removeEventListener('click', handleModalClick);
+    };
+    
+    const handleModalClick = (e) => {
+      if (e.target.id === 'usernameModal') {
+        handleCancel();
+      }
+    };
+    
+    submitBtn.addEventListener('click', handleSubmit);
+    cancelBtn.addEventListener('click', handleCancel);
+    closeBtn.addEventListener('click', handleCancel);
+    input.addEventListener('keypress', handleKeyPress);
+    modal.addEventListener('click', handleModalClick);
+  });
 }
 
 async function fetchServerStatus() {
@@ -414,17 +541,22 @@ function registerCheckoutHandlers() {
 document.getElementById('checkoutButton').addEventListener('click', async () => {
   if (cart.length === 0) return;
   
-  const username = prompt('Enter your Minecraft username:');
-  
-  if (!username || username.trim() === '') {
-    showNotification('Username is required for checkout');
-    return;
-  }
-  
   const checkoutBtn = document.getElementById('checkoutButton');
   const originalText = checkoutBtn.textContent;
   
   try {
+    const username = await showUsernameModal();
+    
+    if (!username || username.trim() === '') {
+      showNotification('Username is required for checkout');
+      return;
+    }
+    
+    if (currentUser && username) {
+      currentUser.username = username;
+      saveUserSession(currentUser.email, username);
+    }
+    
     checkoutBtn.textContent = 'Creating order...';
     checkoutBtn.disabled = true;
     
@@ -466,6 +598,11 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
     checkoutBtn.disabled = false;
     
   } catch (error) {
+    if (error.message === 'Username input cancelled') {
+      console.log('User cancelled username input');
+      return;
+    }
+    
     console.error('Checkout error details:', error);
     let errorMessage = 'Failed to initiate checkout. ';
     
@@ -487,6 +624,75 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
   }
 });
 
+document.getElementById('discordButton').addEventListener('click', () => {
+  if (appConfig && appConfig.discordLink) {
+    window.open(appConfig.discordLink, '_blank');
+  }
+});
+
+document.getElementById('loginButton').addEventListener('click', () => {
+  if (currentUser) {
+    if (confirm(`Logged in as ${currentUser.username || currentUser.email}. Do you want to logout?`)) {
+      logoutUser();
+    }
+  } else {
+    const modal = document.getElementById('loginModal');
+    const input = document.getElementById('loginEmailInput');
+    const submitBtn = document.getElementById('loginSubmitBtn');
+    const cancelBtn = document.getElementById('loginCancelBtn');
+    const closeBtn = document.getElementById('closeLoginModal');
+    
+    modal.style.display = 'flex';
+    setTimeout(() => input.focus(), 100);
+    
+    const handleSubmit = () => {
+      const email = input.value.trim();
+      if (!email || !email.includes('@')) {
+        input.style.borderColor = '#ef4444';
+        setTimeout(() => input.style.borderColor = '', 300);
+        return;
+      }
+      cleanup();
+      modal.style.display = 'none';
+      saveUserSession(email);
+      showNotification('Logged in successfully!');
+    };
+    
+    const handleCancel = () => {
+      cleanup();
+      modal.style.display = 'none';
+    };
+    
+    const handleKeyPress = (e) => {
+      if (e.key === 'Enter') {
+        handleSubmit();
+      } else if (e.key === 'Escape') {
+        handleCancel();
+      }
+    };
+    
+    const cleanup = () => {
+      submitBtn.removeEventListener('click', handleSubmit);
+      cancelBtn.removeEventListener('click', handleCancel);
+      closeBtn.removeEventListener('click', handleCancel);
+      input.removeEventListener('keypress', handleKeyPress);
+      modal.removeEventListener('click', handleModalClick);
+    };
+    
+    const handleModalClick = (e) => {
+      if (e.target.id === 'loginModal') {
+        handleCancel();
+      }
+    };
+    
+    submitBtn.addEventListener('click', handleSubmit);
+    cancelBtn.addEventListener('click', handleCancel);
+    closeBtn.addEventListener('click', handleCancel);
+    input.addEventListener('keypress', handleKeyPress);
+    modal.addEventListener('click', handleModalClick);
+  }
+});
+
 async function init() {
   try {
     console.log('Loading application configuration...');
@@ -497,11 +703,16 @@ async function init() {
       throw new Error('Please configure your Tebex API token in app.config.js');
     }
     
+    loadUserSession();
+    
     document.getElementById('loadingState').style.display = 'block';
     document.getElementById('errorState').style.display = 'none';
     
     fetchServerStatus();
     setInterval(fetchServerStatus, 30000);
+    
+    fetchDiscordMemberCount();
+    setInterval(fetchDiscordMemberCount, 300000);
     
     console.log('Fetching categories from Tebex...');
     const categories = await fetchCategories();
