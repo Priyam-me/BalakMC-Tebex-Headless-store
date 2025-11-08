@@ -11,6 +11,11 @@ export const config = {
       logo: '/template/assets/logo.png'
     },
     
+    theme: {
+      enableHalloween: false,
+      enableChristmas: false
+    },
+    
     urls: {
       completeUrl: '/success',
       cancelUrl: '/cancel'

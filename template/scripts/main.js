@@ -14,6 +14,9 @@ const categoryIcons = ['⚔️', '💎', '🏆', '👑', '🎁', '🔥', '⭐', 
 let currentView = 'categories';
 let allCategories = [];
 
+let discordCache = { count: null, timestamp: 0 };
+const DISCORD_CACHE_DURATION = 5 * 60 * 1000;
+
 async function loadConfig() {
   try {
     const response = await fetch('/api/config');
@@ -53,12 +56,19 @@ async function fetchDiscordMemberCount() {
       return;
     }
     
+    const now = Date.now();
+    if (discordCache.count !== null && (now - discordCache.timestamp) < DISCORD_CACHE_DURATION) {
+      document.getElementById('discordCount').textContent = `(${discordCache.count.toLocaleString()})`;
+      return;
+    }
+    
     const response = await fetch(`https://discord.com/api/v10/invites/${appConfig.discordId}?with_counts=true`);
     if (!response.ok) throw new Error('Failed to fetch Discord data');
     
     const data = await response.json();
     const memberCount = data.approximate_member_count || 0;
     
+    discordCache = { count: memberCount, timestamp: now };
     document.getElementById('discordCount').textContent = `(${memberCount.toLocaleString()})`;
   } catch (error) {
     console.error('Discord fetch error:', error);
@@ -356,6 +366,7 @@ function renderPackages(category) {
         <img src="${pkg.image}" 
              alt="${pkg.name}" 
              class="package-image"
+             loading="lazy"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
         <div class="package-image-fallback ${iconColor}" style="display:none;">${iconFallback}</div>
       `;
@@ -711,10 +722,9 @@ async function init() {
     document.getElementById('errorState').style.display = 'none';
     
     fetchServerStatus();
-    setInterval(fetchServerStatus, 30000);
+    setInterval(fetchServerStatus, 60000);
     
     fetchDiscordMemberCount();
-    setInterval(fetchDiscordMemberCount, 300000);
     
     console.log('Fetching categories from Tebex...');
     const categories = await fetchCategories();
