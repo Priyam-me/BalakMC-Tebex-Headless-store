@@ -93,12 +93,17 @@ body {
   border-color: var(--lime-primary);
 }
 
-.discord-icon,
+.discord-icon {
+  width: 24px;
+  height: 24px;
+  color: #5865F2;
+}
+
 .login-icon {
   font-size: 1.25rem;
 }
 
-.discord-count,
+.discord-text,
 .login-text {
   font-weight: 600;
   font-size: 0.875rem;
@@ -106,6 +111,9 @@ body {
 
 .discord-count {
   color: var(--lime-primary);
+  font-weight: 700;
+  font-size: 0.875rem;
+  margin-left: 0.25rem;
 }
 
 .login-button.logged-in {
@@ -1147,11 +1155,16 @@ body {
     padding: 0.6rem 1rem;
   }
 
-  .discord-icon,
+  .discord-icon {
+    width: 20px;
+    height: 20px;
+  }
+
   .login-icon {
     font-size: 1.1rem;
   }
 
+  .discord-text,
   .discord-count,
   .login-text {
     font-size: 0.8rem;

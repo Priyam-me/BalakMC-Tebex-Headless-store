@@ -48,7 +48,10 @@ function applyConfig() {
 
 async function fetchDiscordMemberCount() {
   try {
-    if (!appConfig || !appConfig.discordId) return;
+    if (!appConfig || !appConfig.discordId || appConfig.discordId === 'YourDiscordServer') {
+      document.getElementById('discordCount').textContent = '';
+      return;
+    }
     
     const response = await fetch(`https://discord.com/api/v10/invites/${appConfig.discordId}?with_counts=true`);
     if (!response.ok) throw new Error('Failed to fetch Discord data');
@@ -56,10 +59,10 @@ async function fetchDiscordMemberCount() {
     const data = await response.json();
     const memberCount = data.approximate_member_count || 0;
     
-    document.getElementById('discordCount').textContent = memberCount.toLocaleString();
+    document.getElementById('discordCount').textContent = `(${memberCount.toLocaleString()})`;
   } catch (error) {
     console.error('Discord fetch error:', error);
-    document.getElementById('discordCount').textContent = 'Join';
+    document.getElementById('discordCount').textContent = '';
   }
 }
 
