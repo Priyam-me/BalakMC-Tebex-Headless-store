@@ -346,6 +346,34 @@ document.getElementById('cartModal').addEventListener('click', (e) => {
   }
 });
 
+document.getElementById('backToCategoriesBtn').addEventListener('click', () => {
+  if (allCategories.length > 0) {
+    renderCategories(allCategories);
+  }
+});
+
+document.getElementById('checkGiftcardBtn').addEventListener('click', () => {
+  const input = document.getElementById('giftcardInput');
+  const result = document.getElementById('giftcardResult');
+  const code = input.value.trim();
+  
+  if (!code) {
+    result.style.display = 'block';
+    result.className = 'giftcard-result error';
+    result.textContent = 'Please enter a gift card code.';
+    return;
+  }
+  
+  result.style.display = 'block';
+  result.className = 'giftcard-result';
+  result.textContent = 'Checking gift card...';
+  
+  setTimeout(() => {
+    result.className = 'giftcard-result error';
+    result.textContent = 'Gift card validation is not configured. Please contact the store administrator.';
+  }, 1000);
+});
+
 function registerCheckoutHandlers() {
   if (checkoutHandlersRegistered) return;
   
@@ -466,13 +494,6 @@ async function init() {
     
     document.getElementById('loadingState').style.display = 'none';
     renderCategories(categories);
-    
-    const backButton = document.getElementById('backToCategoriesBtn');
-    if (backButton) {
-      backButton.addEventListener('click', () => {
-        renderCategories(allCategories);
-      });
-    }
     
   } catch (error) {
     console.error('Initialization error:', error);
