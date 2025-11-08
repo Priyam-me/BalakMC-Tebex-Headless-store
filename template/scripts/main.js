@@ -9,6 +9,9 @@ let checkoutHandlersRegistered = false;
 
 const packageIconFallbacks = ['💎', '⚔️', '🏆', '👑', '🎁', '🔥', '⭐', '🎯'];
 const iconColors = ['purple', 'orange', 'lime', 'blue', 'red'];
+const categoryIcons = ['⚔️', '💎', '🏆', '👑', '🎁', '🔥', '⭐', '🎯', '🛡️', '🗡️'];
+let currentView = 'categories';
+let allCategories = [];
 
 async function loadConfig() {
   try {
@@ -150,6 +153,7 @@ async function addPackageToBasket(basketIdent, packageId, quantity = 1) {
 }
 
 function renderCategories(categories) {
+  allCategories = categories;
   const container = document.getElementById('categoriesContainer');
   container.innerHTML = '';
   
@@ -157,50 +161,89 @@ function renderCategories(categories) {
     container.innerHTML = '<p class="error-state">No packages available at the moment.</p>';
     return;
   }
+
+  const backButton = document.getElementById('backToCategoriesBtn');
+  if (backButton) {
+    backButton.style.display = 'none';
+  }
   
-  let packageIndex = 0;
+  currentView = 'categories';
+  let categoryIndex = 0;
+  
   categories.forEach(category => {
     if (!category.packages || category.packages.length === 0) return;
     
-    category.packages.forEach(pkg => {
-      const iconFallback = packageIconFallbacks[packageIndex % packageIconFallbacks.length];
-      const iconColor = iconColors[packageIndex % iconColors.length];
-      packageIndex++;
-      
-      const packageEl = document.createElement('div');
-      packageEl.className = 'package-card glass-card';
-      packageEl.dataset.packageId = pkg.id;
-      
-      let imageHtml = '';
-      if (pkg.image) {
-        imageHtml = `
-          <img src="${pkg.image}" 
-               alt="${pkg.name}" 
-               class="package-image"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-          <div class="package-image-fallback ${iconColor}" style="display:none;">${iconFallback}</div>
-        `;
-      } else {
-        imageHtml = `<div class="package-icon ${iconColor}">${iconFallback}</div>`;
-      }
-      
-      packageEl.innerHTML = `
-        ${imageHtml}
-        <h3 class="package-name">${pkg.name}</h3>
-        <p class="package-description">${pkg.description || 'Enhance your gameplay experience'}</p>
-        <div class="package-price">${formatPrice(pkg.base_price, pkg.currency)}</div>
-        <button class="add-to-cart-btn" data-package='${JSON.stringify({
-          id: pkg.id,
-          name: pkg.name,
-          price: pkg.base_price,
-          currency: pkg.currency
-        }).replace(/'/g, "&apos;")}'>
-          Buy Now
-        </button>
-      `;
-      
-      container.appendChild(packageEl);
+    const iconFallback = categoryIcons[categoryIndex % categoryIcons.length];
+    const iconColor = iconColors[categoryIndex % iconColors.length];
+    categoryIndex++;
+    
+    const categoryEl = document.createElement('div');
+    categoryEl.className = 'category-card glass-card';
+    categoryEl.dataset.categoryId = category.id;
+    
+    categoryEl.innerHTML = `
+      <div class="category-icon ${iconColor}">${iconFallback}</div>
+      <h3 class="category-name">${category.name}</h3>
+      <p class="category-description">${category.packages.length} Package${category.packages.length !== 1 ? 's' : ''}</p>
+    `;
+    
+    categoryEl.addEventListener('click', () => {
+      renderPackages(category);
     });
+    
+    container.appendChild(categoryEl);
+  });
+}
+
+function renderPackages(category) {
+  const container = document.getElementById('categoriesContainer');
+  container.innerHTML = '';
+  currentView = 'packages';
+  
+  const backButton = document.getElementById('backToCategoriesBtn');
+  if (backButton) {
+    backButton.style.display = 'inline-flex';
+  }
+  
+  let packageIndex = 0;
+  category.packages.forEach(pkg => {
+    const iconFallback = packageIconFallbacks[packageIndex % packageIconFallbacks.length];
+    const iconColor = iconColors[packageIndex % iconColors.length];
+    packageIndex++;
+    
+    const packageEl = document.createElement('div');
+    packageEl.className = 'package-card glass-card';
+    packageEl.dataset.packageId = pkg.id;
+    
+    let imageHtml = '';
+    if (pkg.image) {
+      imageHtml = `
+        <img src="${pkg.image}" 
+             alt="${pkg.name}" 
+             class="package-image"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="package-image-fallback ${iconColor}" style="display:none;">${iconFallback}</div>
+      `;
+    } else {
+      imageHtml = `<div class="package-icon ${iconColor}">${iconFallback}</div>`;
+    }
+    
+    packageEl.innerHTML = `
+      ${imageHtml}
+      <h3 class="package-name">${pkg.name}</h3>
+      <p class="package-description">${pkg.description || 'Enhance your gameplay experience'}</p>
+      <div class="package-price">${formatPrice(pkg.base_price, pkg.currency)}</div>
+      <button class="add-to-cart-btn" data-package='${JSON.stringify({
+        id: pkg.id,
+        name: pkg.name,
+        price: pkg.base_price,
+        currency: pkg.currency
+      }).replace(/'/g, "&apos;")}'>
+        Buy Now
+      </button>
+    `;
+    
+    container.appendChild(packageEl);
   });
   
   document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
@@ -344,8 +387,17 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
     checkoutBtn.textContent = 'Creating order...';
     checkoutBtn.disabled = true;
     
+    if (!appConfig || !appConfig.tebex || !appConfig.tebex.publicToken) {
+      throw new Error('Store configuration is not loaded. Please refresh the page.');
+    }
+    
     console.log('Creating fresh basket for current cart items...');
     currentBasket = await createBasket();
+    
+    if (!currentBasket || !currentBasket.ident) {
+      throw new Error('Failed to create basket. Please check your Tebex configuration.');
+    }
+    
     console.log('Basket created with ident:', currentBasket.ident);
     
     for (const item of cart) {
@@ -355,6 +407,8 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
     
     console.log('Initializing Tebex checkout with ident:', currentBasket.ident);
     
+    registerCheckoutHandlers();
+    
     Tebex.checkout.init({
       ident: currentBasket.ident,
       theme: 'dark',
@@ -363,17 +417,26 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
       }
     });
     
-    registerCheckoutHandlers();
-    
     console.log('Launching Tebex checkout');
+    await new Promise(resolve => setTimeout(resolve, 500));
     Tebex.checkout.launch();
     
     checkoutBtn.textContent = originalText;
     checkoutBtn.disabled = false;
     
   } catch (error) {
-    console.error('Checkout error:', error);
-    showNotification('Failed to initiate checkout. Please try again or contact support.');
+    console.error('Checkout error details:', error);
+    let errorMessage = 'Failed to initiate checkout. ';
+    
+    if (error.message.includes('configuration') || error.message.includes('token')) {
+      errorMessage += 'Please check your store configuration.';
+    } else if (error.message.includes('basket')) {
+      errorMessage += 'Unable to create basket. Please try again.';
+    } else {
+      errorMessage += 'Please try again or contact support.';
+    }
+    
+    showNotification(errorMessage);
     checkoutBtn.textContent = originalText;
     checkoutBtn.disabled = false;
     
@@ -403,6 +466,13 @@ async function init() {
     
     document.getElementById('loadingState').style.display = 'none';
     renderCategories(categories);
+    
+    const backButton = document.getElementById('backToCategoriesBtn');
+    if (backButton) {
+      backButton.addEventListener('click', () => {
+        renderCategories(allCategories);
+      });
+    }
     
   } catch (error) {
     console.error('Initialization error:', error);
