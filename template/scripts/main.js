@@ -160,6 +160,7 @@ function addToCart(packageData) {
   
   if (!existingItem) {
     cart.push(packageData);
+    currentBasket = null;
     updateCartUI();
     showNotification(`${packageData.name} added to cart!`);
   } else {
@@ -169,6 +170,7 @@ function addToCart(packageData) {
 
 function removeFromCart(packageId) {
   cart = cart.filter(item => item.id !== packageId);
+  currentBasket = null;
   updateCartUI();
   renderCart();
 }
@@ -244,13 +246,12 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
     checkoutBtn.textContent = 'Creating order...';
     checkoutBtn.disabled = true;
     
-    if (!currentBasket) {
-      currentBasket = await createBasket();
-      console.log('Basket created with ident:', currentBasket.ident);
-    }
+    console.log('Creating fresh basket for current cart items...');
+    currentBasket = await createBasket();
+    console.log('Basket created with ident:', currentBasket.ident);
     
     for (const item of cart) {
-      console.log('Adding package to basket:', item.id);
+      console.log('Adding package to basket:', item.id, item.name);
       await addPackageToBasket(currentBasket.ident, item.id, 1);
     }
     
@@ -274,12 +275,18 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
     });
     
     Tebex.checkout.on('payment:cancelled', () => {
-      console.log('Payment cancelled');
+      console.log('Payment cancelled by user');
+      currentBasket = null;
       showNotification('Checkout cancelled');
     });
     
+    Tebex.checkout.on('checkout:closed', () => {
+      console.log('Checkout window closed');
+      currentBasket = null;
+    });
+    
     Tebex.checkout.on('checkout:loaded', () => {
-      console.log('Checkout UI loaded');
+      console.log('Checkout UI loaded successfully');
     });
     
     console.log('Launching Tebex checkout');
