@@ -28,7 +28,8 @@ A professional, fully-featured Minecraft store built with Tebex Headless API. Fe
 
 ## Recent Changes
 *2025-11-08* - Quality improvements and seasonal themes:
-- **Package descriptions** - Automatically filters out "see image" placeholder text from Tebex
+- **Package descriptions** - Completely hidden from package cards (visible only in info modal)
+- **Background image** - Fixed to display correctly in all modes (plain, Halloween, Christmas)
 - **Error handling** - Improved console error handling to prevent spam
 - **Halloween theme decorations** - Static cobwebs, spiders, and ghosts plus floating particles
 - **Christmas theme decorations** - Snow layer at footer with snowman, festive lights, and decorations
